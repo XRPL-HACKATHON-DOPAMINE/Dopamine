@@ -132,7 +132,9 @@ defmodule DopaminWeb.MainScreen.MainLive do
             </div>
 
             <button class="bg-yellow-400 text-black font-bold py-2 px-6 rounded">
-              지금 참여하기
+              <.link navigate={~p"/games/1"} class="block w-full py-2">
+                참여하기
+              </.link>
             </button>
           </div>
         </div>
@@ -175,7 +177,9 @@ defmodule DopaminWeb.MainScreen.MainLive do
                 </div>
 
                 <button class="w-full bg-yellow-400 text-black font-bold py-2 rounded">
-                  참여하기
+                  <.link navigate={~p"/games/#{game.id}"} class="block w-full py-2">
+                    참여하기
+                  </.link>
                 </button>
               </div>
             </div>

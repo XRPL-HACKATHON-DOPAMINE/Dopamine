@@ -70,6 +70,8 @@ defmodule DopaminWeb.Router do
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
       live "/main", MainScreen.MainLive
+      live "/games/:id", GameIndexLive
+      live "/betting", BettingLive
     end
   end
 
