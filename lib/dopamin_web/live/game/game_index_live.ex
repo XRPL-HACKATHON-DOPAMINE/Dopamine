@@ -1,117 +1,26 @@
 defmodule DopaminWeb.GameIndexLive do
   use DopaminWeb, :live_view
 
+  alias Dopamin.Game
+
   def mount(%{"id" => id}, _session, socket) do
-    # 실제 애플리케이션에서는 DB에서 게임 데이터를 가져옵니다
     game_id = String.to_integer(id)
 
-    game =
-      case game_id do
-        1 ->
-          %{
-            id: 1,
-            category: "인기 게임",
-            name: "도파만챌린지",
-            description: "최고의 인기를 자랑하는 도파민 챌린지에 참여하세요. 다양한 미션을 완료하고 수익률을 높여 더 많은 보상을받아가세요.",
-            players: 12_450,
-            xrp: 1_250_000,
-            win_rate: 42.6,
-            plays: 230,
-            image: "🎮",
-            updated_at: ~U[2023-10-12 12:30:00Z]
-          }
+    # 데이터베이스에서 게임 정보를 가져옵니다
+    game = Game.get_game_with_details(game_id)
 
-        2 ->
-          %{
-            id: 2,
-            category: "카드 게임",
-            name: "퀸카 포커",
-            description: "실력과 운이 따르는 포커 게임! 남들과 늦게 승리하면 더 높은 수익률을 얻 수 있어요.",
-            players: 5_240,
-            xrp: 580_000,
-            win_rate: 33.1,
-            plays: 180,
-            image: "♠️",
-            updated_at: ~U[2023-10-10 15:45:00Z]
-          }
-
-        3 ->
-          %{
-            id: 3,
-            category: "전략 게임",
-            name: "타겟 마스터",
-            description: "철저한 타이밍과 지적으로 목표를 달성하세요. 최고의 정확도가 최고의 수익률 보장합니다.",
-            players: 3_180,
-            xrp: 420_000,
-            win_rate: 29.5,
-            plays: 150,
-            image: "🎯",
-            updated_at: ~U[2023-10-08 09:20:00Z]
-          }
-
-        _ ->
-          %{
-            id: game_id,
-            category: "카드 게임",
-            name: "근사치 맞추기 게임",
-            description:
-              "실력과 운을 겸비한 근사치 맞추기 게임에 도전하세요! 여러분 경험으로 얼마나 수 있으며, 특히 경쟁에 비례한 수익률을 낼 수 있습니다. 실시간으로 다른 참가자들과 경쟁하며, 가장 근접한 숫자를 맞추어 더 큰 보상을 얻으세요. 높은 예측 정확도에 참여 확율에 따라 더 큰 보상을 보너스 게임도 제공합니다.",
-            players: 5_240,
-            xrp: 580_000,
-            win_rate: 35.8,
-            plays: 128,
-            image: "🎲",
-            updated_at: ~U[2023-10-12 12:30:00Z]
-          }
-      end
-
-    game_rules = [
-      "참가자는 제한 시간 안에 주어 근접해 상정합니다.",
-      "승자는 시간 통화 기준 가장온 숫자를 맞추는 도전이 선정됩니다.",
-      "가장 근접한 숫자를 맞춘 사람이 우승을 얻게됩니다. (동점 경우에 대비)",
-      "특별 보너스 라운드에서 추가 보상을 얻을 수 있습니다.",
-      "근사치를 맞춰 최소에 따라 누적 보상의 범위 수 있습니다"
-    ]
-
-    betting_options = [
-      %{id: 1, name: "소액 투자", description: "낮은 위험, 안정적인 수익", amount: 10_000, selected: false},
-      %{id: 2, name: "중액 투자", description: "적절한 위험과 수익의 균형", amount: 50_000, selected: true},
-      %{id: 3, name: "고액 투자", description: "높은 위험, 높은 수익 가능성", amount: 100_000, selected: false},
-      %{id: 4, name: "직접 입력", description: "원하는 금액에 직접 설정", amount: nil, selected: false}
-    ]
-
-    reward_tiers = [
-      %{rank: "1위", condition: "최고 근접 정답", reward: 50_000},
-      %{rank: "2위~10위", condition: "상위 2~10위 정답", reward: 20_000},
-      %{rank: "11위~50위", condition: "상위 11~50위 정답", reward: 10_000},
-      %{rank: "51위~100위", condition: "상위 51~100위 정답", reward: 5_000}
-    ]
-
-    timer = %{
-      days: 2,
-      hours: 10,
-      minutes: 36,
-      seconds: 18
-    }
-
-    top_players = [
-      %{rank: 1, username: "포리딘", win_rate: 82.4, games_played: 94, icon: "P"},
-      %{rank: 2, username: "메가스타", win_rate: 78.9, games_played: 88, icon: "L"},
-      %{rank: 3, username: "게임마스터", win_rate: 75.2, games_played: 76, icon: "M"},
-      %{rank: 4, username: "탑플레이어", win_rate: 68.7, games_played: 65, icon: "T"},
-      %{rank: 5, username: "도맹사", win_rate: 64.3, games_played: 61, icon: "D"}
-    ]
+    # 베팅 옵션에서 선택된 옵션을 찾습니다
+    selected_bet = Enum.find(game.betting_options, fn opt -> opt.selected end)
 
     socket =
       socket
       |> assign(:game, game)
-      |> assign(:game_rules, game_rules)
-      |> assign(:betting_options, betting_options)
-      |> assign(:selected_bet, Enum.find(betting_options, fn opt -> opt.selected end))
-      |> assign(:reward_tiers, reward_tiers)
-      |> assign(:timer, timer)
-      |> assign(:top_players, top_players)
-      |> assign(:page_title, "근사치 맞추기 게임")
+      |> assign(:game_rules, game.rules)
+      |> assign(:betting_options, game.betting_options)
+      |> assign(:selected_bet, selected_bet)
+      |> assign(:reward_tiers, game.reward_tiers)
+      |> assign(:top_players, game.top_players)
+      |> assign(:page_title, game.name)
 
     {:ok, socket}
   end
@@ -139,7 +48,34 @@ defmodule DopaminWeb.GameIndexLive do
     {:noreply, socket |> put_flash(:info, "게임이 시작되었습니다!")}
   end
 
+  # 종료 시간까지 남은 시간 계산
+  defp calculate_remaining_time(end_time) do
+    now = DateTime.utc_now()
+
+    if DateTime.compare(end_time, now) == :gt do
+      # 종료 시간이 현재보다 미래인 경우
+      diff_seconds = DateTime.diff(end_time, now, :second)
+
+      days = div(diff_seconds, 86400)
+      diff_seconds = rem(diff_seconds, 86400)
+
+      hours = div(diff_seconds, 3600)
+      diff_seconds = rem(diff_seconds, 3600)
+
+      minutes = div(diff_seconds, 60)
+      seconds = rem(diff_seconds, 60)
+
+      %{days: days, hours: hours, minutes: minutes, seconds: seconds}
+    else
+      # 이미 종료된 경우
+      %{days: 0, hours: 0, minutes: 0, seconds: 0}
+    end
+  end
+
   def render(assigns) do
+    # 게임 종료 시간으로부터 남은 시간 계산
+    assigns = assign(assigns, :timer, calculate_remaining_time(assigns.game.end_time))
+
     ~H"""
     <div class="bg-black text-white pt-16 pb-10">
       <!-- 게임 기본 정보 -->
@@ -214,14 +150,14 @@ defmodule DopaminWeb.GameIndexLive do
                 </div>
                 <div class="bg-zinc-800 p-4 rounded-lg">
                   <div class="text-center">
-                    <p class="text-xl font-bold">580,000 XRP</p>
+                    <p class="text-xl font-bold">{number_to_string(@game.xrp)} XRP</p>
                     <p class="text-xs text-gray-400">총상금</p>
                   </div>
                 </div>
                 <div class="bg-zinc-800 p-4 rounded-lg">
                   <div class="text-center">
                     <p class="text-xl font-bold">{@game.win_rate}%</p>
-                    <p class="text-xs text-gray-400">평균 승률률</p>
+                    <p class="text-xs text-gray-400">평균 승률</p>
                   </div>
                 </div>
                 <div class="bg-zinc-800 p-4 rounded-lg">
@@ -250,7 +186,7 @@ defmodule DopaminWeb.GameIndexLive do
                       <div class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-400 text-black flex items-center justify-center mr-3 mt-0.5 font-bold text-xs">
                         {index + 1}
                       </div>
-                      <p class="text-sm text-gray-300">{rule}</p>
+                      <p class="text-sm text-gray-300">{rule.rule}</p>
                     </li>
                   <% end %>
                 </ul>
@@ -262,12 +198,16 @@ defmodule DopaminWeb.GameIndexLive do
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <%= for option <- @betting_options do %>
-                    <div phx-click="select_bet" phx-value-id={option.id}>
+                    <div
+                      class="bg-zinc-800 p-4 rounded-lg cursor-pointer hover:bg-zinc-700 transition duration-150"
+                      phx-click="select_bet"
+                      phx-value-id={option.id}
+                    >
                       <div class="flex items-center">
                         <%= if option.selected do %>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-3 w-3 text-black"
+                            class="h-3 w-3 text-yellow-400"
                             viewBox="0 0 20 20"
                             fill="currentColor"
                           >
@@ -284,12 +224,7 @@ defmodule DopaminWeb.GameIndexLive do
                         <p class="text-xs text-gray-400">{option.description}</p>
                         <%= if option.amount do %>
                           <p class="text-right text-yellow-400 font-bold mt-2">
-                            {case option.amount do
-                              10_000 -> "10,000"
-                              50_000 -> "50,000"
-                              100_000 -> "100,000"
-                              _ -> "#{option.amount}"
-                            end}
+                            {number_to_string(option.amount)} XRP
                           </p>
                         <% else %>
                           <div class="flex justify-end mt-2">
@@ -311,46 +246,52 @@ defmodule DopaminWeb.GameIndexLive do
                 <p class="text-sm">
                   선택한 투자 금액:
                   <span class="text-yellow-400 font-bold">
-                    <%= if @selected_bet.amount do %>
-                      {case @selected_bet.amount do
-                        10_000 -> "10,000"
-                        50_000 -> "50,000"
-                        100_000 -> "100,000"
-                        _ -> "#{@selected_bet.amount}"
-                      end} XRP
+                    <%= if @selected_bet && @selected_bet.amount do %>
+                      {number_to_string(@selected_bet.amount)} XRP
                     <% else %>
                       직접 입력
                     <% end %>
                   </span>
                 </p>
-                <button class="bg-yellow-400 text-black font-bold py-3 px-6 rounded">
-                  <.link navigate={~p"/betting"} class="block w-full py-2">
-                    참여하기
-                  </.link>
+                <button
+                  phx-click="start_game"
+                  class="bg-yellow-400 text-black font-bold py-3 px-6 rounded"
+                >
+                  참여하기
                 </button>
               </div>
             </div>
             
-    <!-- 게임 종료까지 -->
+    <!-- 게임 종료까지 카운트다운 -->
             <div class="bg-zinc-900 rounded-lg p-6 mb-6">
               <h2 class="text-lg font-bold mb-4">게임 종료까지</h2>
 
-              <div class="grid grid-cols-4 gap-4 text-center">
-                <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-yellow-400">{@timer.days}</div>
-                  <div class="text-xs text-gray-400">일</div>
-                </div>
-                <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-yellow-400">{@timer.hours}</div>
-                  <div class="text-xs text-gray-400">시간</div>
-                </div>
-                <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-yellow-400">{@timer.minutes}</div>
-                  <div class="text-xs text-gray-400">분</div>
-                </div>
-                <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-yellow-400">{@timer.seconds}</div>
-                  <div class="text-xs text-gray-400">초</div>
+              <div id="countdown-timer" phx-hook="CountdownTimer" data-end-time={@game.end_time}>
+                <div class="grid grid-cols-4 gap-4 text-center">
+                  <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-400 days-value">
+                      {@timer.days}
+                    </div>
+                    <div class="text-xs text-gray-400">일</div>
+                  </div>
+                  <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-400 hours-value">
+                      {@timer.hours}
+                    </div>
+                    <div class="text-xs text-gray-400">시간</div>
+                  </div>
+                  <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-400 minutes-value">
+                      {@timer.minutes}
+                    </div>
+                    <div class="text-xs text-gray-400">분</div>
+                  </div>
+                  <div class="bg-zinc-800 bg-opacity-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-400 seconds-value">
+                      {@timer.seconds}
+                    </div>
+                    <div class="text-xs text-gray-400">초</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -419,13 +360,7 @@ defmodule DopaminWeb.GameIndexLive do
                       <div class="font-bold">{tier.rank}</div>
                       <div class="text-gray-400">{tier.condition}</div>
                       <div class="text-right text-yellow-400 font-bold">
-                        {case tier.reward do
-                          50_000 -> "50,000"
-                          20_000 -> "20,000"
-                          10_000 -> "10,000"
-                          5_000 -> "5,000"
-                          _ -> "#{tier.reward}"
-                        end}
+                        {number_to_string(tier.reward)} XRP
                       </div>
                     </div>
                   <% end %>
@@ -452,4 +387,15 @@ defmodule DopaminWeb.GameIndexLive do
     </div>
     """
   end
+
+  # 숫자 포맷팅 헬퍼 함수
+  defp number_to_string(number) when is_integer(number) do
+    number
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=.)/, "\\1,")
+    |> String.reverse()
+  end
+
+  defp number_to_string(nil), do: "-"
 end

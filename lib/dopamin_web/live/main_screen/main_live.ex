@@ -1,93 +1,55 @@
 defmodule DopaminWeb.MainScreen.MainLive do
   use DopaminWeb, :live_view
 
+  alias Dopamin.Game
+
   def mount(_params, _session, socket) do
-    # 여기서 실제로는 데이터베이스에서 게임 목록을 가져올 것입니다
-    games = [
-      %{
-        id: 1,
-        category: "인기 게임",
-        name: "도파만챌린지",
-        description: "최고의 인기를 자랑하는 도파민 챌린지에 참여하세요. 다양한 미션을 완료하고 수익률을 높여 더 많은 보상을받아가세요.",
-        players: 12_450,
-        xrp: 1_250_000,
-        days: 3,
-        image: "🎮"
-      },
-      %{
-        id: 2,
-        category: "카드 게임",
-        name: "퀸카 포커",
-        description: "실력과 운이 따르는 포커 게임! 남들과 늦게 승리하면 더 높은 수익률을 얻 수 있어요.",
-        players: 5_240,
-        xrp: 580_000,
-        days: nil,
-        image: "♠️"
-      },
-      %{
-        id: 3,
-        category: "전략 게임",
-        name: "타겟 마스터",
-        description: "철저한 타이밍과 지적으로 목표를 달성하세요. 최고의 정확도가 최고의 수익률 보장합니다.",
-        players: 3_180,
-        xrp: 420_000,
-        days: nil,
-        image: "🎯"
-      },
-      %{
-        id: 4,
-        category: "경매",
-        name: "월간 챌린지샵",
-        description: "이번 월 최고의 글챌리어를 가려라 대화, 다양한 경쟁에서 상위를 등혀해보세요.",
-        players: 8_760,
-        xrp: 1_500_000,
-        days: nil,
-        image: "🏆"
-      },
-      %{
-        id: 5,
-        category: "주사위",
-        name: "행운의 룰렛",
-        description: "운과 전략을 결합한 룰렛 게임. 참여자에 따라 배당률이 크게 가변적이죠.",
-        players: 7_130,
-        xrp: 890_000,
-        days: nil,
-        image: "🎪"
-      },
-      %{
-        id: 6,
-        category: "스포츠",
-        name: "실리 게임",
-        description: "다른 플레이어와 실리를 겨루 매력적이죠. 높은 독점적이 진로 오리도록 자랑합니다.",
-        players: 4_570,
-        xrp: 620_000,
-        days: nil,
-        image: "🎮"
-      },
-      %{
-        id: 7,
-        category: "퍼즐",
-        name: "퍼즐 마스터",
-        description: "논리와 사고의 문제 해결 과정을 테스트하는 퍼즐 게임. 체스 도전하기 쉽진 않지만!",
-        players: 2_980,
-        xrp: 350_000,
-        days: nil,
-        image: "🧩"
-      }
-    ]
+    # 데이터베이스에서 게임 목록을 가져옵니다
+    games = Game.list_games()
 
-    # 추천 게임은 첫 번째 게임으로 설정
-    featured_game = List.first(games)
-    other_games = Enum.drop(games, 1)
+    # 플레이어 수 기준으로 인기 게임(추천 게임) 선정
+    featured_game = Enum.max_by(games, & &1.players, fn -> nil end)
 
-    categories = ["전체 게임", "인기게임", "카드 게임", "슈팅게 놀고 게임", "골드룸", "인기순 정렬"]
+    # 나머지 게임 목록 (인기 게임 제외)
+    other_games =
+      if featured_game do
+        Enum.filter(games, fn game -> game.id != featured_game.id end)
+      else
+        games
+      end
+
+    # 카테고리 목록 (중복 제거)
+    categories = ["전체 게임" | Enum.uniq(Enum.map(games, & &1.category))]
 
     {:ok,
      socket
      |> assign(:featured_game, featured_game)
      |> assign(:games, other_games)
      |> assign(:categories, categories)
-     |> assign(:active_category, "카드 게임")}
+     |> assign(:active_category, "전체 게임")}
+  end
+
+  def handle_event("select_category", %{"category" => category}, socket) do
+    games =
+      if category == "전체 게임" do
+        # 전체 게임을 선택한 경우 인기 게임을 제외한 모든 게임 표시
+        featured_game = socket.assigns.featured_game
+        all_games = Game.list_games()
+
+        if featured_game do
+          Enum.filter(all_games, fn game -> game.id != featured_game.id end)
+        else
+          all_games
+        end
+      else
+        # 특정 카테고리만 필터링
+        Game.list_games_by_category(category)
+      end
+
+    {:noreply,
+     socket
+     |> assign(:games, games)
+     |> assign(:active_category, category)}
   end
 
   def render(assigns) do
@@ -99,52 +61,71 @@ defmodule DopaminWeb.MainScreen.MainLive do
         <p class="text-gray-400 text-sm">도파민과 함께 게임을 즐기며 수익 창출의 기회를 잡아보세요</p>
       </div>
       
-    <!-- 추천 게임 -->
-      <div class="max-w-4xl mx-auto bg-zinc-900 rounded-lg overflow-hidden mb-12">
-        <div class="p-8 flex flex-col md:flex-row">
-          <div class="flex-shrink-0 flex justify-center items-center p-6 md:p-0 md:mr-8">
-            <div class="text-6xl">
-              {@featured_game.image}
-            </div>
-          </div>
-          <div class="flex-grow">
-            <div class="mb-4">
-              <span class="bg-yellow-600 text-xs text-black px-2 py-1 rounded font-semibold">
-                인기 게임
-              </span>
-            </div>
-            <h2 class="text-xl font-bold mb-2">{@featured_game.name}</h2>
-            <p class="text-gray-400 text-sm mb-6">{@featured_game.description}</p>
-
-            <div class="grid grid-cols-3 gap-4 mb-6">
-              <div>
-                <p class="font-bold text-xl">{number_to_string(@featured_game.players)}명</p>
-                <p class="text-gray-500 text-xs">플레이어</p>
-              </div>
-              <div>
-                <p class="font-bold text-xl">{number_to_string(@featured_game.xrp)} XRP</p>
-                <p class="text-gray-500 text-xs">누적 상금</p>
-              </div>
-              <div>
-                <p class="font-bold text-xl">{@featured_game.days}일</p>
-                <p class="text-gray-500 text-xs">남은 기간</p>
-              </div>
-            </div>
-
-            <button class="bg-yellow-400 text-black font-bold py-2 px-6 rounded">
-              <.link navigate={~p"/games/1"} class="block w-full py-2">
-                참여하기
-              </.link>
+    <!-- 카테고리 선택 메뉴 -->
+      <div class="max-w-6xl mx-auto px-4 mb-8">
+        <div class="flex flex-wrap gap-2">
+          <%= for category <- @categories do %>
+            <button
+              phx-click="select_category"
+              phx-value-category={category}
+              class={"px-4 py-2 rounded-full text-sm font-medium #{if @active_category == category, do: "bg-yellow-400 text-black", else: "bg-zinc-800 text-white"}"}
+            >
+              {category}
             </button>
-          </div>
+          <% end %>
         </div>
       </div>
+      
+    <!-- 추천 게임 -->
+      <%= if @featured_game do %>
+        <div class="max-w-4xl mx-auto bg-zinc-900 rounded-lg overflow-hidden mb-12">
+          <div class="p-8 flex flex-col md:flex-row">
+            <div class="flex-shrink-0 flex justify-center items-center p-6 md:p-0 md:mr-8">
+              <div class="text-6xl">
+                {@featured_game.image}
+              </div>
+            </div>
+            <div class="flex-grow">
+              <div class="mb-4">
+                <span class="bg-yellow-600 text-xs text-black px-2 py-1 rounded font-semibold">
+                  {@featured_game.category}
+                </span>
+              </div>
+              <h2 class="text-xl font-bold mb-2">{@featured_game.name}</h2>
+              <p class="text-gray-400 text-sm mb-6">{@featured_game.description}</p>
+
+              <div class="grid grid-cols-3 gap-4 mb-6">
+                <div>
+                  <p class="font-bold text-xl">{number_to_string(@featured_game.players)}명</p>
+                  <p class="text-gray-500 text-xs">플레이어</p>
+                </div>
+                <div>
+                  <p class="font-bold text-xl">{number_to_string(@featured_game.xrp)} XRP</p>
+                  <p class="text-gray-500 text-xs">누적 상금</p>
+                </div>
+                <div>
+                  <p class="font-bold text-xl">{days_remaining(@featured_game.end_time)}일</p>
+                  <p class="text-gray-500 text-xs">남은 기간</p>
+                </div>
+              </div>
+
+              <button class="bg-yellow-400 text-black font-bold py-2 px-6 rounded">
+                <.link navigate={~p"/games/#{@featured_game.id}"} class="block w-full py-2">
+                  상세 보기
+                </.link>
+              </button>
+            </div>
+          </div>
+        </div>
+      <% end %>
       
     <!-- 게임 목록 -->
       <div class="max-w-6xl mx-auto px-4">
         <div class="flex items-center mb-6">
           <div class="text-2xl mr-4">🎮</div>
-          <h2 class="text-xl font-bold">참여 가능한 게임</h2>
+          <h2 class="text-xl font-bold">
+            {if @active_category == "전체 게임", do: "참여 가능한 게임", else: @active_category}
+          </h2>
         </div>
         
     <!-- 게임 그리드 -->
@@ -165,7 +146,7 @@ defmodule DopaminWeb.MainScreen.MainLive do
                 <h3 class="font-bold mb-2">{game.name}</h3>
                 <p class="text-gray-400 text-xs mb-4 h-16 overflow-hidden">{game.description}</p>
 
-                <div class="grid grid-cols-2 gap-2 mb-4">
+                <div class="grid grid-cols-3 gap-2 mb-4">
                   <div>
                     <p class="font-bold">{number_to_string(game.players)}명</p>
                     <p class="text-gray-500 text-xs">플레이어</p>
@@ -174,11 +155,15 @@ defmodule DopaminWeb.MainScreen.MainLive do
                     <p class="font-bold">{number_to_string(game.xrp)} XRP</p>
                     <p class="text-gray-500 text-xs">누적 상금</p>
                   </div>
+                  <div>
+                    <p class="font-bold">{days_remaining(game.end_time)}일</p>
+                    <p class="text-gray-500 text-xs">남은 기간</p>
+                  </div>
                 </div>
 
                 <button class="w-full bg-yellow-400 text-black font-bold py-2 rounded">
                   <.link navigate={~p"/games/#{game.id}"} class="block w-full py-2">
-                    참여하기
+                    상세 보기
                   </.link>
                 </button>
               </div>
@@ -200,4 +185,21 @@ defmodule DopaminWeb.MainScreen.MainLive do
   end
 
   defp number_to_string(nil), do: "-"
+
+  # 종료 시간까지 남은 일수 계산
+  defp days_remaining(end_time) do
+    now = DateTime.utc_now()
+
+    case DateTime.compare(end_time, now) do
+      :gt ->
+        # 종료 시간이 미래인 경우
+        diff = DateTime.diff(end_time, now, :second)
+        days = trunc(diff / (60 * 60 * 24))
+        if days == 0 and diff > 0, do: 1, else: days
+
+      _ ->
+        # 이미 종료되었거나 종료 시간이 현재인 경우
+        0
+    end
+  end
 end

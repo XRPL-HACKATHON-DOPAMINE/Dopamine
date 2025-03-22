@@ -1,3 +1,5 @@
+// hooks/metamask.js
+
 // W-XRP 토큰 정보
 const W_XRP_TOKEN_INFO = {
   symbol: "W-XRP",
@@ -10,9 +12,8 @@ const STORAGE_KEYS = {
   CONNECTION_STATE: "dopamin_metamask_connected",
 };
 
-let Hooks = {};
-
-Hooks.MetaMaskHeader = {
+// MetaMask 헤더 훅 정의
+const MetaMaskHeader = {
   mounted() {
     console.log("MetaMask 헤더 훅 마운트됨");
 
@@ -458,4 +459,7 @@ Hooks.MetaMaskHeader = {
   },
 };
 
-export default Hooks;
+// 모든 훅을 객체로 내보내기
+export default {
+  MetaMaskHeader,
+};

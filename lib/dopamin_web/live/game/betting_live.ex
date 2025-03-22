@@ -373,19 +373,6 @@ defmodule DopaminWeb.BettingLive do
                   </div>
                 </div>
                 
-    <!-- 슬라이더 -->
-                <div class="mb-6">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs">투자 배수 금액</span>
-                    <span class="text-blue-400 font-bold">W20,000</span>
-                  </div>
-                  <input type="range" min="0" max="100000" value="20000" class="w-full" />
-                  <div class="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>최소: 0</span>
-                    <span>최대: 100,000</span>
-                  </div>
-                </div>
-                
     <!-- 투자 통계 -->
                 <div class="mb-6 space-y-2">
                   <div class="flex justify-between text-sm">
