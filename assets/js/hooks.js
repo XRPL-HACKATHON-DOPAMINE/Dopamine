@@ -1,5 +1,3 @@
-import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
-
 // W-XRP 토큰 정보
 const W_XRP_TOKEN_INFO = {
   symbol: "W-XRP",

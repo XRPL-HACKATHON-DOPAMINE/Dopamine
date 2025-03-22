@@ -108,6 +108,16 @@ defmodule DopaminWeb.BettingLive do
       %{icon: "🏆", label: "온라인 지속 보상"}
     ]
 
+    # 트레이딩뷰 차트 설정
+    chart_settings = %{
+      symbol: "BINANCE:XRPUSDT",
+      interval: "60",
+      # 검은색 배경에 맞게 변경
+      theme: "dark",
+      height: 400,
+      width: "100%"
+    }
+
     {:ok,
      socket
      |> assign(:game, game)
@@ -119,6 +129,7 @@ defmodule DopaminWeb.BettingLive do
      |> assign(:badges, badges)
      |> assign(:custom_amount, "20000")
      |> assign(:selected_amount, "W20,000")
+     |> assign(:chart_settings, chart_settings)
      |> assign(:page_title, "퀸카 포커 - 코인 가격 예측")}
   end
 
@@ -142,6 +153,12 @@ defmodule DopaminWeb.BettingLive do
   def handle_event("place_bet", _params, socket) do
     # 실제로 베팅을 처리하는 로직을 여기 구현
     {:noreply, socket |> put_flash(:info, "예측 베팅이 설정되었습니다!")}
+  end
+
+  def handle_event("update_chart_interval", %{"interval" => interval}, socket) do
+    # 차트 간격 업데이트
+    chart_settings = Map.put(socket.assigns.chart_settings, :interval, interval)
+    {:noreply, socket |> assign(:chart_settings, chart_settings)}
   end
 
   def render(assigns) do
@@ -178,7 +195,11 @@ defmodule DopaminWeb.BettingLive do
     <!-- 시간 필터 버튼 -->
                 <div class="flex items-center justify-end space-x-1 -mt-6">
                   <%= for filter <- @time_filters do %>
-                    <button>
+                    <button
+                      phx-click="update_chart_interval"
+                      phx-value-interval={filter.value}
+                      class={"text-xs px-2 py-1 rounded " <> if(filter.selected, do: "bg-blue-500", else: "bg-zinc-800")}
+                    >
                       {filter.label}
                     </button>
                   <% end %>
@@ -197,21 +218,29 @@ defmodule DopaminWeb.BettingLive do
                   </div>
                 </div>
                 
-    <!-- 차트 영역 (실제로는 LiveView에서 차트 컴포넌트를 사용) -->
-                <div class="h-48 mb-6 relative">
-                  <!-- 상한가 라인 -->
-                  <div class="absolute top-1/4 left-0 right-0 flex items-center">
-                    <div class="h-px bg-yellow-400 flex-grow"></div>
-                    <div class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">
-                      고점 기준가: {@game.price_high}
-                    </div>
+    <!-- 트레이딩뷰 차트 추가 -->
+                <div
+                  class="tradingview-widget-container mb-6"
+                  id="tradingview-container"
+                  phx-update="ignore"
+                >
+                  <div
+                    id="tradingview_xrp_chart"
+                    style={"height: #{@chart_settings.height}px; width: #{@chart_settings.width}"}
+                  >
                   </div>
-                  
-    <!-- 예측가 라인 -->
-                  <div class="absolute top-2/3 left-0 right-0 flex items-center">
-                    <div class="h-px bg-green-400 flex-grow"></div>
-                    <div class="bg-green-400 text-black text-xs font-bold px-2 py-1 rounded">
-                      내 예측가: {@game.user_prediction}
+                </div>
+
+                <div class="mb-4">
+                  <!-- 상한가 및 예측가 정보 -->
+                  <div class="flex justify-between text-xs mb-2">
+                    <div class="flex items-center">
+                      <span class="h-3 w-3 bg-yellow-400 rounded-full inline-block mr-1"></span>
+                      <span>고점 기준가: {@game.price_high}</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="h-3 w-3 bg-green-400 rounded-full inline-block mr-1"></span>
+                      <span>내 예측가: {@game.user_prediction}</span>
                     </div>
                   </div>
                 </div>
@@ -260,11 +289,11 @@ defmodule DopaminWeb.BettingLive do
                   </thead>
                   <tbody>
                     <%= for participant <- @participants do %>
-                      <tr class={}>
+                      <tr class={if participant.username == "나", do: "bg-zinc-800", else: ""}>
                         <td class="p-4">{participant.rank}</td>
                         <td class="p-4">
                           <div class="flex items-center">
-                            <div class={}>
+                            <div class={"w-6 h-6 rounded-full bg-#{participant.avatar}-500 flex items-center justify-center text-xs mr-2"}>
                               {String.first(participant.username)}
                             </div>
                             <span>{participant.username}</span>
@@ -272,7 +301,11 @@ defmodule DopaminWeb.BettingLive do
                         </td>
                         <td class="p-4">{participant.prediction}</td>
                         <td class="p-4">
-                          <span class={}>
+                          <span class={
+                            if String.starts_with?(participant.change, "+"),
+                              do: "text-green-400",
+                              else: "text-red-400"
+                          }>
                             {participant.change}
                           </span>
                         </td>
@@ -315,7 +348,11 @@ defmodule DopaminWeb.BettingLive do
     <!-- 금액 선택 버튼 -->
                 <div class="grid grid-cols-3 gap-2 mb-4">
                   <%= for option <- @investment_options do %>
-                    <button phx-click="select_amount" phx-value-amount={option.amount} class={}>
+                    <button
+                      phx-click="select_amount"
+                      phx-value-amount={option.amount}
+                      class={"bg-zinc-800 rounded p-2 text-center " <> if(option.selected, do: "border border-blue-500", else: "")}
+                    >
                       <div class="text-xs font-bold">{option.amount}</div>
                       <div class="text-xs">{option.label}</div>
                     </button>
@@ -392,6 +429,60 @@ defmodule DopaminWeb.BettingLive do
         </div>
       </div>
     </div>
+
+    <!-- TradingView 스크립트 추가 -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js">
+    </script>
+    <script>
+      document.addEventListener("phx:update", function() {
+        if (document.getElementById("tradingview_xrp_chart") && typeof TradingView !== 'undefined') {
+          new TradingView.widget({
+            "container_id": "tradingview_xrp_chart",
+            "width": "100%",
+            "height": 400,
+            "symbol": "<%= @chart_settings.symbol %>",
+            "interval": "<%= @chart_settings.interval %>",
+            "timezone": "Etc/UTC",
+            "theme": "<%= @chart_settings.theme %>",
+            "style": "1",
+            "locale": "kr",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "studies": [
+              "MACD@tv-basicstudies",
+              "RSI@tv-basicstudies"
+            ],
+            "hideideas": true
+          });
+        }
+      });
+
+      // 페이지 로드 시 초기화
+      window.addEventListener("load", function() {
+        if (document.getElementById("tradingview_xrp_chart") && typeof TradingView !== 'undefined') {
+          new TradingView.widget({
+            "container_id": "tradingview_xrp_chart",
+            "width": "100%",
+            "height": 400,
+            "symbol": "BINANCE:XRPUSDT",
+            "interval": "60",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "kr",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "studies": [
+              "MACD@tv-basicstudies",
+              "RSI@tv-basicstudies"
+            ],
+            "hideideas": true
+          });
+        }
+      });
+    </script>
     """
   end
 end
