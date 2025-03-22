@@ -12,47 +12,44 @@
     </script>
   </head>
   <body class="bg-white">
-    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_user do %>
-        <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          {@current_user.email}
-        </li>
-        <li>
-          <.link
-            href={~p"/users/settings"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Settings
+    <!-- 헤더 -->
+    <header class="fixed w-full bg-black bg-opacity-95 py-3 px-6 md:px-16 flex justify-between items-center z-50">
+      <a href="/" class="flex items-center">
+        <div class="w-4 h-4 bg-yellow-400 mr-2"></div>
+        <span class="font-bold text-white">도파민</span>
+      </a>
+
+      <%= if assigns[:current_user] do %>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-300">{@current_user.email}</span>
+          <.link href={~p"/users/settings"} class="text-sm text-gray-300 hover:text-gray-100">
+            설정
           </.link>
-        </li>
-        <li>
           <.link
             href={~p"/users/log_out"}
             method="delete"
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+            class="bg-yellow-400 text-black px-4 py-2 rounded text-sm font-bold"
           >
-            Log out
+            로그아웃
           </.link>
-        </li>
+        </div>
       <% else %>
-        <li>
-          <.link
-            href={~p"/users/register"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Register
+        <div class="flex items-center gap-4">
+          <.link href={~p"/users/register"} class="text-sm text-gray-300 hover:text-gray-100">
+            회원가입
           </.link>
-        </li>
-        <li>
           <.link
             href={~p"/users/log_in"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+            class="bg-yellow-400 text-black px-4 py-2 rounded text-sm font-bold"
           >
-            Log in
+            로그인
           </.link>
-        </li>
+        </div>
       <% end %>
-    </ul>
-    {@inner_content}
+    </header>
+    <main>
+      <.flash_group flash={@flash} />
+      {@inner_content}
+    </main>
   </body>
 </html>
