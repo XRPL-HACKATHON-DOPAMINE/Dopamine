@@ -118,4 +118,175 @@ defmodule Dopamin.Game do
         top_players: from(tp in TopPlayer, order_by: tp.rank)
       ])
   end
+
+  @doc """
+  게임에 참가합니다.
+  """
+  def join_game(game_id, user_id, bet_amount) do
+    now = DateTime.utc_now()
+
+    # 이미 참여한 경우 중복 참여 방지
+    if user_joined_game?(game_id, user_id) do
+      {:error, "이미 게임에 참여하셨습니다"}
+    else
+      %GameParticipants{}
+      |> GameParticipants.changeset(%{
+        game_id: game_id,
+        user_id: user_id,
+        bet_amount: bet_amount,
+        status: "active",
+        joined_at: now
+      })
+      |> Repo.insert()
+      |> case do
+        {:ok, participant} = result ->
+          # 게임 참가자 수 증가 로직 (필요한 경우)
+          update_game_participants_count(game_id)
+
+          # 이벤트 로깅 또는 추가 작업 (필요한 경우)
+          log_participant_joined(participant)
+
+          result
+
+        error ->
+          error
+      end
+    end
+  end
+
+  # 참여자 수 업데이트 (필요한 경우)
+  defp update_game_participants_count(game_id) do
+    game = Repo.get(Game, game_id)
+    participants_count = count_participants(game_id)
+
+    Game.changeset(game, %{players: participants_count})
+    |> Repo.update()
+  end
+
+  # 참여 로그 기록 (선택적)
+  defp log_participant_joined(participant) do
+    # 로깅 로직이 필요한 경우 구현
+    IO.puts(
+      "Player #{participant.user_id} joined game #{participant.game_id} with bet #{participant.bet_amount}"
+    )
+  end
+
+  @doc """
+  참가자 ID로 참가 정보를 조회합니다.
+  """
+  def get_participant(participant_id) do
+    Repo.get(GameParticipants, participant_id)
+    |> Repo.preload(:game)
+  end
+
+  @doc """
+  참가자 ID로 참가 정보를 조회합니다.
+  """
+  def get_participant(participant_id) do
+    Repo.get(GameParticipants, participant_id)
+    |> Repo.preload(:game)
+  end
+
+  @doc """
+  참가자의 베팅 금액을 업데이트합니다.
+  """
+  def update_participant_bet(participant_id, bet_amount) do
+    participant = get_participant(participant_id)
+
+    if participant do
+      GameParticipants.changeset(participant, %{bet_amount: bet_amount})
+      |> Repo.update()
+    else
+      {:error, :not_found}
+    end
+  end
+
+  @doc """
+  게임 ID에 해당하는 참가자 목록을 조회합니다.
+  """
+  def list_game_participants(game_id, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 20)
+    offset = Keyword.get(opts, :offset, 0)
+    status = Keyword.get(opts, :status)
+
+    query =
+      from p in GameParticipants,
+        where: p.game_id == ^game_id,
+        order_by: [desc: p.bet_amount],
+        limit: ^limit,
+        offset: ^offset
+
+    query = if status, do: from(q in query, where: q.status == ^status), else: query
+
+    Repo.all(query)
+  end
+
+  @doc """
+  유저 ID와 게임 ID로 참가 정보를 조회합니다.
+  """
+  def get_participant_by_user_and_game(user_id, game_id) do
+    Repo.get_by(GameParticipants, user_id: user_id, game_id: game_id)
+  end
+
+  @doc """
+  게임의 총 참가자 수를 조회합니다.
+  """
+  def count_game_participants(game_id, status \\ "active") do
+    query =
+      from p in GameParticipants,
+        where: p.game_id == ^game_id,
+        where: p.status == ^status
+
+    Repo.aggregate(query, :count)
+  end
+
+  @doc """
+  참가자 결과를 업데이트합니다.
+  """
+  def update_participant_result(participant_id, result, reward_amount) do
+    participant = get_participant(participant_id)
+
+    if participant do
+      GameParticipants.changeset(participant, %{
+        status: "completed",
+        result: result,
+        reward_amount: reward_amount
+      })
+      |> Repo.update()
+    else
+      {:error, :not_found}
+    end
+  end
+
+  @doc """
+  사용자의 모든 게임 참가 이력을 조회합니다.
+  """
+  def list_user_participations(user_id, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 10)
+    offset = Keyword.get(opts, :offset, 0)
+    status = Keyword.get(opts, :status)
+
+    query =
+      from p in GameParticipants,
+        join: g in Game,
+        on: p.game_id == g.id,
+        where: p.user_id == ^user_id,
+        order_by: [desc: p.inserted_at],
+        limit: ^limit,
+        offset: ^offset,
+        select: %{
+          id: p.id,
+          game_id: p.game_id,
+          game_name: g.name,
+          bet_amount: p.bet_amount,
+          status: p.status,
+          result: p.result,
+          reward_amount: p.reward_amount,
+          joined_at: p.joined_at
+        }
+
+    query = if status, do: from(q in query, where: q.status == ^status), else: query
+
+    Repo.all(query)
+  end
 end

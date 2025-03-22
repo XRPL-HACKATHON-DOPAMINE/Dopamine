@@ -71,7 +71,7 @@ defmodule DopaminWeb.Router do
 
       live "/main", MainScreen.MainLive
       live "/games/:id", GameIndexLive
-      live "/betting", BettingLive
+      live "/betting/:participant_id", BettingLive, :show
     end
   end
 

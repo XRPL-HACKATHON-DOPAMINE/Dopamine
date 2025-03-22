@@ -1,136 +1,119 @@
 defmodule DopaminWeb.BettingLive do
   use DopaminWeb, :live_view
+  alias Dopamin.Game
 
-  def mount(_params, _session, socket) do
-    # 게임 정보
-    game = %{
-      id: 1,
-      name: "퀸카 포커 - 코인 가격 예측",
-      current_price: "W14,500",
-      current_price_change: "+17.4%",
-      win_rate: "32.5%",
-      my_investment: "W50,000",
-      total_reward: "W70,000",
-      end_time: "1일 22시간",
-      current_price_raw: 14500,
-      reference_price: "W12,250",
-      reference_change: "+2.5%",
-      up_percent: 62,
-      down_percent: 38,
-      price_high: "W20,200",
-      user_prediction: "W14,500"
-    }
+  def mount(%{"participant_id" => participant_id}, _session, socket) do
+    # 참가자 정보 로드
+    case Game.get_participant(String.to_integer(participant_id)) do
+      nil ->
+        {:ok,
+         socket
+         |> put_flash(:error, "참가 정보를 찾을 수 없습니다")
+         |> redirect(to: ~p"/")}
 
-    # 참여자 순위
-    participants = [
-      %{
-        rank: 1,
-        username: "코인킹",
-        avatar: "yellow",
-        prediction: "W15,200",
-        change: "+23.1%",
-        investment: "W100,000",
-        reward: "W38,500"
-      },
-      %{
-        rank: 2,
-        username: "트레이더맨",
-        avatar: "gray",
-        prediction: "9,800",
-        change: "-20.6%",
-        investment: "75,000",
-        reward: "W36,750"
-      },
-      %{
-        rank: 12,
-        username: "나",
-        avatar: "yellow",
-        prediction: "W14,500",
-        change: "+17.4%",
-        investment: "W70,000",
-        reward: "W22,750"
-      },
-      %{
-        rank: 13,
-        username: "코인헌터",
-        avatar: "yellow",
-        prediction: "W13,100",
-        change: "+6.1%",
-        investment: "60,000",
-        reward: "W18,300"
-      },
-      %{
-        rank: 14,
-        username: "베어맨",
-        avatar: "gray",
-        prediction: "W10,500",
-        change: "-15.0%",
-        investment: "W55,000",
-        reward: "W22,750"
-      }
-    ]
+      participant ->
+        # 게임 정보 로드
+        game = Game.get_game_with_details(participant.game_id)
 
-    # 투자 옵션
-    investment_options = [
-      %{amount: "10,000", label: "소액", selected: false},
-      %{amount: "W20,000", label: "중액", selected: true},
-      %{amount: "W100,000", label: "고액", selected: false}
-    ]
+        # 남은 시간 계산
+        remaining_time = calculate_remaining_time(game.end_time)
 
-    # 투자 계산 정보
-    investment_stats = %{
-      initial_investment: "50,000",
-      accumulated_rewards: "20,000",
-      current_rewards: "20,000",
-      total_rewards: "90,000"
-    }
+        # 예상 수익금 계산
+        expected_reward = calculate_expected_reward(participant.bet_amount, game.win_rate)
 
-    # 하단 요약 정보
-    summary = [
-      %{value: "W50,000", label: "초기 투자금"},
-      %{value: "W70,000", label: "총 예측 금액"},
-      %{value: "92,750", label: "예상 최종 금액"},
-      %{value: "상위 22%", label: "현재 순위"}
-    ]
+        # 게임 정보
+        game_data = %{
+          id: game.id,
+          name: "#{game.name} - 코인 가격 예측",
+          # 실제로는 API에서 가져오거나 DB에서 가져와야 함
+          current_price: "W14,500",
+          current_price_change: "+17.4%",
+          win_rate: "#{game.win_rate}%",
+          my_investment: "W#{number_to_string(participant.bet_amount)}",
+          total_reward: "W#{number_to_string(expected_reward)}",
+          end_time: remaining_time,
+          current_price_raw: 14500,
+          reference_price: "W12,250",
+          reference_change: "+2.5%",
+          up_percent: 62,
+          down_percent: 38,
+          price_high: "W20,200",
+          user_prediction: "W14,500"
+        }
 
-    # 차트 시간 필터
-    time_filters = [
-      %{label: "1H", value: "1h", selected: false},
-      %{label: "6H", value: "6h", selected: true},
-      %{label: "24H", value: "24h", selected: false},
-      %{label: "ALL", value: "all", selected: false}
-    ]
+        # DB에서 참여자 목록 가져오기
+        all_participants = Game.list_game_participants(game.id, limit: 50)
 
-    # 배지
-    badges = [
-      %{icon: "🏆", label: "소액 거래왕"},
-      %{icon: "🏅", label: "승률 상승 기록"},
-      %{icon: "🏆", label: "온라인 지속 보상"}
-    ]
+        # 참여자 데이터 변환
+        participants_data = convert_participants_data(all_participants, participant.user_id)
 
-    # 트레이딩뷰 차트 설정
-    chart_settings = %{
-      symbol: "BINANCE:XRPUSDT",
-      interval: "60",
-      # 검은색 배경에 맞게 변경
-      theme: "dark",
-      height: 400,
-      width: "100%"
-    }
+        # 투자 옵션 (베팅 금액 옵션) - DB에서 가져온 베팅 옵션 사용
+        investment_options =
+          Enum.map(game.betting_options, fn option ->
+            %{
+              amount: "#{number_to_string(option.amount)}",
+              label: option.name,
+              selected: option.selected
+            }
+          end)
 
-    {:ok,
-     socket
-     |> assign(:game, game)
-     |> assign(:participants, participants)
-     |> assign(:investment_options, investment_options)
-     |> assign(:investment_stats, investment_stats)
-     |> assign(:summary, summary)
-     |> assign(:time_filters, time_filters)
-     |> assign(:badges, badges)
-     |> assign(:custom_amount, "20000")
-     |> assign(:selected_amount, "W20,000")
-     |> assign(:chart_settings, chart_settings)
-     |> assign(:page_title, "퀸카 포커 - 코인 가격 예측")}
+        # 투자 계산 정보
+        investment_stats = %{
+          initial_investment: "#{number_to_string(participant.bet_amount)}",
+          # 초기에는 0
+          accumulated_rewards: "0",
+          # 초기에는 0
+          current_rewards: "0",
+          total_rewards: "#{number_to_string(expected_reward)}"
+        }
+
+        # 하단 요약 정보
+        summary = [
+          %{value: "W#{number_to_string(participant.bet_amount)}", label: "초기 투자금"},
+          %{value: "W#{number_to_string(participant.bet_amount)}", label: "총 예측 금액"},
+          %{value: "W#{number_to_string(expected_reward)}", label: "예상 최종 금액"},
+          %{
+            value: "상위 #{calculate_rank_percentage(all_participants, participant)}%",
+            label: "현재 순위"
+          }
+        ]
+
+        # 차트 시간 필터
+        time_filters = [
+          %{label: "1H", value: "1h", selected: false},
+          %{label: "6H", value: "6h", selected: true},
+          %{label: "24H", value: "24h", selected: false},
+          %{label: "ALL", value: "all", selected: false}
+        ]
+
+        # 배지 - 사용자 성취에 기반한 배지 표시
+        badges = calculate_badges(participant)
+
+        # 트레이딩뷰 차트 설정
+        chart_settings = %{
+          symbol: "BINANCE:XRPUSDT",
+          interval: "60",
+          theme: "dark",
+          height: 400,
+          width: "100%"
+        }
+
+        {:ok,
+         socket
+         |> assign(:game, game_data)
+         |> assign(:original_game, game)
+         |> assign(:participant, participant)
+         |> assign(:participants, participants_data)
+         |> assign(:investment_options, investment_options)
+         |> assign(:investment_stats, investment_stats)
+         |> assign(:summary, summary)
+         |> assign(:time_filters, time_filters)
+         |> assign(:badges, badges)
+         |> assign(:custom_amount, "#{participant.bet_amount}")
+         |> assign(:selected_amount, "W#{number_to_string(participant.bet_amount)}")
+         |> assign(:chart_settings, chart_settings)
+         |> assign(:page_title, "#{game.name} - 코인 가격 예측")}
+    end
   end
 
   def handle_event("select_amount", %{"amount" => amount}, socket) do
@@ -151,15 +134,180 @@ defmodule DopaminWeb.BettingLive do
   end
 
   def handle_event("place_bet", _params, socket) do
-    # 실제로 베팅을 처리하는 로직을 여기 구현
-    {:noreply, socket |> put_flash(:info, "예측 베팅이 설정되었습니다!")}
+    # 실제로 베팅 금액을 업데이트하는 로직
+    participant = socket.assigns.participant
+    custom_amount = socket.assigns.custom_amount
+
+    # 금액을 정수로 변환
+    {bet_amount, _} = Integer.parse(custom_amount)
+
+    # 데이터베이스에 베팅 금액 업데이트
+    case Game.update_participant_bet(participant.id, bet_amount) do
+      {:ok, updated_participant} ->
+        # 업데이트된 정보로 재계산
+        game = socket.assigns.original_game
+        expected_reward = calculate_expected_reward(bet_amount, game.win_rate)
+
+        # 업데이트된 투자 통계
+        investment_stats = %{
+          initial_investment: socket.assigns.investment_stats.initial_investment,
+          accumulated_rewards: socket.assigns.investment_stats.accumulated_rewards,
+          current_rewards: "#{number_to_string(bet_amount - participant.bet_amount)}",
+          total_rewards: "#{number_to_string(expected_reward)}"
+        }
+
+        # 업데이트된 요약 정보
+        summary =
+          Enum.map(socket.assigns.summary, fn item ->
+            case item.label do
+              "총 예측 금액" -> %{value: "W#{number_to_string(bet_amount)}", label: item.label}
+              "예상 최종 금액" -> %{value: "W#{number_to_string(expected_reward)}", label: item.label}
+              _ -> item
+            end
+          end)
+
+        # 게임 데이터 업데이트
+        game_data =
+          Map.merge(socket.assigns.game, %{
+            my_investment: "W#{number_to_string(bet_amount)}",
+            total_reward: "W#{number_to_string(expected_reward)}"
+          })
+
+        {:noreply,
+         socket
+         |> assign(:participant, updated_participant)
+         |> assign(:investment_stats, investment_stats)
+         |> assign(:summary, summary)
+         |> assign(:game, game_data)
+         |> put_flash(:info, "추가 매수가 성공적으로 설정되었습니다!")}
+
+      {:error, _changeset} ->
+        {:noreply, socket |> put_flash(:error, "베팅 금액 업데이트에 실패했습니다.")}
+    end
   end
 
   def handle_event("update_chart_interval", %{"interval" => interval}, socket) do
     # 차트 간격 업데이트
     chart_settings = Map.put(socket.assigns.chart_settings, :interval, interval)
-    {:noreply, socket |> assign(:chart_settings, chart_settings)}
+
+    # 시간 필터 업데이트
+    time_filters =
+      socket.assigns.time_filters
+      |> Enum.map(fn filter ->
+        Map.put(filter, :selected, filter.value == interval)
+      end)
+
+    {:noreply,
+     socket
+     |> assign(:chart_settings, chart_settings)
+     |> assign(:time_filters, time_filters)}
   end
+
+  # 남은 시간 계산 함수
+  defp calculate_remaining_time(end_time) do
+    now = DateTime.utc_now()
+
+    case DateTime.compare(end_time, now) do
+      :gt ->
+        # 종료 시간이 미래인 경우
+        diff_seconds = DateTime.diff(end_time, now, :second)
+
+        days = div(diff_seconds, 86400)
+        diff_seconds = rem(diff_seconds, 86400)
+
+        hours = div(diff_seconds, 3600)
+
+        "#{days}일 #{hours}시간"
+
+      _ ->
+        # 이미 종료된 경우
+        "종료됨"
+    end
+  end
+
+  # 예상 수익 계산 함수
+  defp calculate_expected_reward(bet_amount, win_rate) do
+    trunc(bet_amount * (1 + win_rate / 100))
+  end
+
+  # 참여자 목록 변환 함수
+  defp convert_participants_data(participants, current_user_id) do
+    # 베팅 금액 기준으로 정렬 (높은 순)
+    sorted_participants = Enum.sort_by(participants, & &1.bet_amount, :desc)
+
+    # 순위 부여 및 형식 변환
+    Enum.with_index(sorted_participants, 1)
+    |> Enum.map(fn {participant, index} ->
+      is_current_user = participant.user_id == current_user_id
+      username = if is_current_user, do: "나", else: "사용자#{participant.user_id}"
+
+      # 랜덤 예측 가격과 변동률 (실제로는 DB에서 가져와야 함)
+      {prediction, change} = generate_prediction_data()
+
+      %{
+        rank: index,
+        username: username,
+        avatar: if(is_current_user, do: "yellow", else: random_avatar_color()),
+        prediction: prediction,
+        change: change,
+        investment: "W#{number_to_string(participant.bet_amount)}",
+        reward: "W#{number_to_string(calculate_expected_reward(participant.bet_amount, 35))}"
+      }
+    end)
+  end
+
+  # 랜덤 아바타 색상
+  defp random_avatar_color do
+    Enum.random(["yellow", "gray", "blue", "green", "red"])
+  end
+
+  # 랜덤 예측 데이터 생성
+  defp generate_prediction_data do
+    base_price = 12_250
+    change_percent = Enum.random(-25..25)
+    new_price = trunc(base_price * (1 + change_percent / 100))
+
+    prediction = "W#{number_to_string(new_price)}"
+    change = "#{if change_percent >= 0, do: "+", else: ""}#{change_percent}.#{Enum.random(0..9)}%"
+
+    {prediction, change}
+  end
+
+  # 순위 백분율 계산
+  defp calculate_rank_percentage(participants, current_participant) do
+    total_count = length(participants)
+
+    # 현재 참가자보다 베팅 금액이 높은 참가자 수 찾기
+    higher_bet_count =
+      Enum.count(participants, fn p ->
+        p.bet_amount > current_participant.bet_amount
+      end)
+
+    # 백분율 계산 (상위 n%)
+    percentage = trunc(higher_bet_count / total_count * 100)
+    percentage
+  end
+
+  # 배지 계산 함수
+  defp calculate_badges(participant) do
+    # 예시 배지 (실제로는 사용자 활동에 기반하여 계산해야 함)
+    [
+      %{icon: "🏆", label: "소액 거래왕"},
+      %{icon: "🏅", label: "승률 상승 기록"},
+      %{icon: "🏆", label: "온라인 지속 보상"}
+    ]
+  end
+
+  # 숫자 포맷팅 헬퍼 함수
+  defp number_to_string(number) when is_integer(number) do
+    number
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=.)/, "\\1,")
+    |> String.reverse()
+  end
+
+  defp number_to_string(nil), do: "-"
 
   def render(assigns) do
     ~H"""
@@ -342,7 +490,7 @@ defmodule DopaminWeb.BettingLive do
     <!-- 금액 선택 및 베팅 -->
               <div>
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="font-bold text-sm">추가 배수하기</h3>
+                  <h3 class="font-bold text-sm">추가 매수하기</h3>
                 </div>
                 
     <!-- 금액 선택 버튼 -->
@@ -380,11 +528,11 @@ defmodule DopaminWeb.BettingLive do
                     <span class="font-bold">{@investment_stats.initial_investment}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span>기존 추가 배수</span>
+                    <span>기존 추가 매수</span>
                     <span class="font-bold">{@investment_stats.accumulated_rewards}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span>현재 추가 배수</span>
+                    <span>현재 추가 매수</span>
                     <span class="font-bold">{@investment_stats.current_rewards}</span>
                   </div>
                   <div class="flex justify-between text-sm border-t border-zinc-800 pt-2">
@@ -408,7 +556,7 @@ defmodule DopaminWeb.BettingLive do
                   phx-click="place_bet"
                   class="w-full bg-blue-500 text-white font-bold py-3 rounded"
                 >
-                  추가 배수 확정하기
+                  추가 매수 확정하기
                 </button>
               </div>
             </div>

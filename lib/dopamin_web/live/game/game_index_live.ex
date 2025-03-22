@@ -5,24 +5,34 @@ defmodule DopaminWeb.GameIndexLive do
 
   def mount(%{"id" => id}, _session, socket) do
     game_id = String.to_integer(id)
+    user_id = socket.assigns.current_user.id
 
-    # 데이터베이스에서 게임 정보를 가져옵니다
-    game = Game.get_game_with_details(game_id)
+    # 이미 게임에 참가했는지 확인
+    case Game.get_participant_by_user_and_game(user_id, game_id) do
+      %{id: participant_id} ->
+        # 이미 참가한 경우 베팅 페이지로 리다이렉트
+        {:ok, socket |> redirect(to: ~p"/betting/#{participant_id}")}
 
-    # 베팅 옵션에서 선택된 옵션을 찾습니다
-    selected_bet = Enum.find(game.betting_options, fn opt -> opt.selected end)
+      nil ->
+        # 참가하지 않은 경우 정상적으로 페이지 표시
+        # 데이터베이스에서 게임 정보를 가져옵니다
+        game = Game.get_game_with_details(game_id)
 
-    socket =
-      socket
-      |> assign(:game, game)
-      |> assign(:game_rules, game.rules)
-      |> assign(:betting_options, game.betting_options)
-      |> assign(:selected_bet, selected_bet)
-      |> assign(:reward_tiers, game.reward_tiers)
-      |> assign(:top_players, game.top_players)
-      |> assign(:page_title, game.name)
+        # 베팅 옵션에서 선택된 옵션을 찾습니다
+        selected_bet = Enum.find(game.betting_options, fn opt -> opt.selected end)
 
-    {:ok, socket}
+        socket =
+          socket
+          |> assign(:game, game)
+          |> assign(:game_rules, game.rules)
+          |> assign(:betting_options, game.betting_options)
+          |> assign(:selected_bet, selected_bet)
+          |> assign(:reward_tiers, game.reward_tiers)
+          |> assign(:top_players, game.top_players)
+          |> assign(:page_title, game.name)
+
+        {:ok, socket}
+    end
   end
 
   def handle_event("select_bet", %{"id" => id}, socket) do
@@ -46,6 +56,55 @@ defmodule DopaminWeb.GameIndexLive do
     # 실제로 게임을 시작하는 로직 구현
     # 여기서는 알림 메시지만 표시
     {:noreply, socket |> put_flash(:info, "게임이 시작되었습니다!")}
+  end
+
+  def handle_event("join_game", _params, socket) do
+    game = socket.assigns.game
+    selected_bet = socket.assigns.selected_bet
+
+    # 유저 ID는 현재 세션에서 가져옵니다 (실제 인증 시스템에 맞게 조정 필요)
+    user_id = socket.assigns.current_user.id
+
+    # 베팅 금액 확인
+    bet_amount = selected_bet && selected_bet.amount
+
+    if bet_amount do
+      # 게임 참가 정보를 데이터베이스에 기록
+      case Game.join_game(game.id, user_id, bet_amount) do
+        {:ok, participant} ->
+          # 참가 성공: 베팅 페이지로 리다이렉트
+          {:noreply,
+           socket
+           |> put_flash(:info, "게임에 성공적으로 참여했습니다!")
+           |> redirect(to: ~p"/betting/#{participant.id}")}
+
+        {:error, changeset} when is_map(changeset) ->
+          # 참가 실패: 오류 메시지 표시 (Ecto Changeset 오류)
+          error_message = error_message_from_changeset(changeset)
+          {:noreply, socket |> put_flash(:error, "참가 실패: #{error_message}")}
+
+        {:error, message} when is_binary(message) ->
+          # 참가 실패: 문자열 오류 메시지 (이미 참여한 경우 등)
+          {:noreply, socket |> put_flash(:error, message)}
+
+        error ->
+          # 기타 오류
+          {:noreply, socket |> put_flash(:error, "알 수 없는 오류가 발생했습니다")}
+      end
+    else
+      # 베팅 금액이 선택되지 않은 경우
+      {:noreply, socket |> put_flash(:error, "베팅 금액을 선택해주세요")}
+    end
+  end
+
+  defp error_message_from_changeset(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map(fn {k, v} -> "#{k} #{v}" end)
+    |> Enum.join(", ")
   end
 
   # 종료 시간까지 남은 시간 계산
@@ -254,7 +313,7 @@ defmodule DopaminWeb.GameIndexLive do
                   </span>
                 </p>
                 <button
-                  phx-click="start_game"
+                  phx-click="join_game"
                   class="bg-yellow-400 text-black font-bold py-3 px-6 rounded"
                 >
                   참여하기
