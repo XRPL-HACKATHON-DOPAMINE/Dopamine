@@ -331,7 +331,7 @@ defmodule DopaminWeb.BettingLive do
             </div>
           </div>
         </div>
-        
+
     <!-- 메인 게임 콘텐츠 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- 차트 및 예측 영역 -->
@@ -339,7 +339,7 @@ defmodule DopaminWeb.BettingLive do
             <div class="bg-zinc-900 rounded-lg overflow-hidden mb-6">
               <div class="p-4 border-b border-zinc-800">
                 <h2 class="text-sm font-bold">실시간 코인 그래프</h2>
-                
+
     <!-- 시간 필터 버튼 -->
                 <div class="flex items-center justify-end space-x-1 -mt-6">
                   <%= for filter <- @time_filters do %>
@@ -365,7 +365,7 @@ defmodule DopaminWeb.BettingLive do
                     </div>
                   </div>
                 </div>
-                
+
     <!-- 트레이딩뷰 차트 추가 -->
                 <div
                   class="tradingview-widget-container mb-6"
@@ -392,7 +392,7 @@ defmodule DopaminWeb.BettingLive do
                     </div>
                   </div>
                 </div>
-                
+
     <!-- 상승/하락 예측 버튼 -->
                 <div class="grid grid-cols-2 gap-4">
                   <div class="border border-green-500 bg-zinc-800 rounded p-3 text-center cursor-pointer">
@@ -406,7 +406,7 @@ defmodule DopaminWeb.BettingLive do
                 </div>
               </div>
             </div>
-            
+
     <!-- 하단 요약 정보 -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <%= for item <- @summary do %>
@@ -416,7 +416,7 @@ defmodule DopaminWeb.BettingLive do
                 </div>
               <% end %>
             </div>
-            
+
     <!-- 참여자 순위 테이블 -->
             <div class="bg-zinc-900 rounded-lg overflow-hidden">
               <div class="p-4 border-b border-zinc-800">
@@ -466,7 +466,7 @@ defmodule DopaminWeb.BettingLive do
               </div>
             </div>
           </div>
-          
+
     <!-- 예측 정보 및 베팅 섹션 -->
           <div class="lg:col-span-1">
             <div class="bg-zinc-900 rounded-lg p-6 mb-6">
@@ -486,13 +486,13 @@ defmodule DopaminWeb.BettingLive do
                   <div class="text-xs text-gray-400">예상 수익률</div>
                 </div>
               </div>
-              
+
     <!-- 금액 선택 및 베팅 -->
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="font-bold text-sm">추가 매수하기</h3>
                 </div>
-                
+
     <!-- 금액 선택 버튼 -->
                 <div class="grid grid-cols-3 gap-2 mb-4">
                   <%= for option <- @investment_options do %>
@@ -506,7 +506,7 @@ defmodule DopaminWeb.BettingLive do
                     </button>
                   <% end %>
                 </div>
-                
+
     <!-- 직접 입력 -->
                 <div class="mb-6">
                   <label class="block text-sm font-bold mb-2">직접 입력</label>
@@ -517,10 +517,10 @@ defmodule DopaminWeb.BettingLive do
                       phx-change="change_amount"
                       class="bg-zinc-800 rounded-l p-2 w-full text-right"
                     />
-                    <span class="bg-zinc-700 rounded-r p-2 text-sm">원</span>
+                    <span class="bg-zinc-700 rounded-r p-2 text-sm">XRP</span>
                   </div>
                 </div>
-                
+
     <!-- 투자 통계 -->
                 <div class="mb-6 space-y-2">
                   <div class="flex justify-between text-sm">
@@ -540,7 +540,7 @@ defmodule DopaminWeb.BettingLive do
                     <span class="text-blue-400 font-bold">{@investment_stats.total_rewards}</span>
                   </div>
                 </div>
-                
+
     <!-- 배지 -->
                 <div class="grid grid-cols-3 gap-2 mb-6">
                   <%= for badge <- @badges do %>
@@ -550,7 +550,7 @@ defmodule DopaminWeb.BettingLive do
                     </div>
                   <% end %>
                 </div>
-                
+
     <!-- 베팅 버튼 -->
                 <button
                   phx-click="place_bet"
