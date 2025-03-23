@@ -11,14 +11,13 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="bg-white">
+  <body class="bg-black text-white">
     <!-- 헤더 -->
     <header class="fixed w-full bg-black bg-opacity-95 py-3 px-6 md:px-16 flex justify-between items-center z-50">
       <a href="/" class="flex items-center">
         <div class="w-4 h-4 bg-yellow-400 mr-2"></div>
         <span class="font-bold text-white">도파민</span>
       </a>
-
       <div class="flex items-center">
         <%= if assigns[:current_user] do %>
           <!-- 메타마스크 지갑 영역 -->
