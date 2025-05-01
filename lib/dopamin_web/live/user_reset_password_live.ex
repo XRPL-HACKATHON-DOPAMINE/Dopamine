@@ -5,35 +5,77 @@ defmodule DopaminWeb.UserResetPasswordLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">Reset Password</.header>
+    <div class="relative min-h-screen pt-28 pb-24">
+      <!-- 우주 배경 애니메이션 -->
+      <div class="animated-bg">
+        <div class="stars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="floating-light"></div>
+        <div class="floating-light"></div>
+        <div class="space-planet planet-1"></div>
+        <div class="space-planet planet-2"></div>
+        <div class="space-nebula"></div>
+      </div>
 
-      <.simple_form
-        for={@form}
-        id="reset_password_form"
-        phx-submit="reset_password"
-        phx-change="validate"
-      >
-        <.error :if={@form.errors != []}>
-          Oops, something went wrong! Please check the errors below.
-        </.error>
+      <div class="content-wrapper">
+        <div class="mx-auto max-w-sm">
+          <div class="bg-gray-900 bg-opacity-80 rounded-xl p-8 backdrop-filter backdrop-blur-lg border border-gray-800 shadow-xl">
+            <.header class="text-center text-white">
+              <span class="text-yellow-400 font-bold">비밀번호 재설정</span>
+            </.header>
 
-        <.input field={@form[:password]} type="password" label="New password" required />
-        <.input
-          field={@form[:password_confirmation]}
-          type="password"
-          label="Confirm new password"
-          required
-        />
-        <:actions>
-          <.button phx-disable-with="Resetting..." class="w-full">Reset Password</.button>
-        </:actions>
-      </.simple_form>
+            <.simple_form
+              for={@form}
+              id="reset_password_form"
+              phx-submit="reset_password"
+              phx-change="validate"
+              class="mt-6"
+            >
+              <.error :if={@form.errors != []}>
+                오류가 발생했습니다. 아래 내용을 확인해 주세요.
+              </.error>
 
-      <p class="text-center text-sm mt-4">
-        <.link href={~p"/users/register"}>Register</.link>
-        | <.link href={~p"/users/log_in"}>Log in</.link>
-      </p>
+              <div class="space-y-4">
+                <.input field={@form[:password]} type="password" label="새 비밀번호" required />
+                <.input
+                  field={@form[:password_confirmation]}
+                  type="password"
+                  label="새 비밀번호 확인"
+                  required
+                />
+              </div>
+
+              <:actions>
+                <.button phx-disable-with="재설정 중..." class="w-full mt-6 py-3">
+                  비밀번호 재설정
+                </.button>
+              </:actions>
+            </.simple_form>
+
+            <div class="flex justify-center items-center space-x-4 mt-6">
+              <.link
+                href={~p"/users/register"}
+                class="text-sm text-gray-300 hover:text-yellow-400 transition-colors"
+              >
+                회원가입
+              </.link>
+              <span class="text-gray-500">|</span>
+              <.link
+                href={~p"/users/log_in"}
+                class="text-sm text-gray-300 hover:text-yellow-400 transition-colors"
+              >
+                로그인
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end
@@ -60,7 +102,7 @@ defmodule DopaminWeb.UserResetPasswordLive do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Password reset successfully.")
+         |> put_flash(:info, "비밀번호가 성공적으로 재설정되었습니다.")
          |> redirect(to: ~p"/users/log_in")}
 
       {:error, changeset} ->
@@ -78,7 +120,7 @@ defmodule DopaminWeb.UserResetPasswordLive do
       assign(socket, user: user, token: token)
     else
       socket
-      |> put_flash(:error, "Reset password link is invalid or it has expired.")
+      |> put_flash(:error, "비밀번호 재설정 링크가 유효하지 않거나 만료되었습니다.")
       |> redirect(to: ~p"/")
     end
   end

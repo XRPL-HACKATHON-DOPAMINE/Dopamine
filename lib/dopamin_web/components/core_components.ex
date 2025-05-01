@@ -202,9 +202,9 @@ defmodule DopaminWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-10 space-y-8 bg-white">
+      <div class={["mt-6 space-y-6", assigns[:class] || ""]}>
         {render_slot(@inner_block, f)}
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+        <div :for={action <- @actions} class="mt-4 flex items-center justify-between gap-6">
           {render_slot(action, f)}
         </div>
       </div>
@@ -231,8 +231,9 @@ defmodule DopaminWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "phx-submit-loading:opacity-75 rounded-lg bg-yellow-400 hover:bg-yellow-500 py-2 px-4",
+        "text-sm font-semibold leading-6 text-black active:text-black/80 transition-all duration-200",
+        "shadow-lg hover:shadow-yellow-400/20",
         @class
       ]}
       {@rest}
@@ -310,7 +311,7 @@ defmodule DopaminWeb.CoreComponents do
 
     ~H"""
     <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <label class="flex items-center gap-4 text-sm leading-6 text-gray-300 cursor-pointer">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -318,7 +319,7 @@ defmodule DopaminWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class="rounded border-gray-600 text-yellow-400 focus:ring-yellow-400 bg-gray-800"
           {@rest}
         />
         {@label}
@@ -377,9 +378,10 @@ defmodule DopaminWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "mt-2 block w-full rounded-lg focus:ring-1 sm:text-sm sm:leading-6 transition-colors bg-gray-800 text-white",
+          @errors == [] && "border-gray-700 focus:border-yellow-400 focus:ring-yellow-400",
+          @errors != [] && "border-rose-500 focus:border-rose-500 focus:ring-rose-500",
+          assigns[:class]
         ]}
         {@rest}
       />
@@ -396,7 +398,7 @@ defmodule DopaminWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-gray-300">
       {render_slot(@inner_block)}
     </label>
     """
@@ -409,8 +411,8 @@ defmodule DopaminWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
+    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-400">
+      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none text-rose-400" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -429,12 +431,12 @@ defmodule DopaminWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-xl font-bold leading-8 text-white">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <div :if={@subtitle != []} class="mt-2 text-sm leading-6 flex flex-col space-y-1">
           {render_slot(@subtitle)}
-        </p>
+        </div>
       </div>
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
