@@ -54,124 +54,159 @@ defmodule DopaminWeb.MainScreen.MainLive do
 
   def render(assigns) do
     ~H"""
-    <div class="bg-black text-white min-h-screen pt-16 pb-10">
-      <!-- 메인 타이틀 -->
-      <div class="text-center py-10">
-        <h1 class="text-3xl font-bold mb-2">수익률 기반 지능형 게임 시스템</h1>
-        <p class="text-gray-400 text-sm">도파민과 함께 게임을 즐기며 수익 창출의 기회를 잡아보세요</p>
+    <div class="relative min-h-screen pb-24">
+      <!-- 성능 최적화된 우주 배경 애니메이션 -->
+      <div class="animated-bg">
+        <div class="stars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="floating-light"></div>
+        <div class="floating-light"></div>
+        <!-- 추가 우주 배경 요소 -->
+        <div class="space-planet planet-1"></div>
+        <div class="space-planet planet-2"></div>
+        <div class="space-nebula"></div>
       </div>
       
-    <!-- 카테고리 선택 메뉴 -->
-      <div class="max-w-6xl mx-auto px-4 mb-8">
-        <div class="flex flex-wrap gap-2">
-          <%= for category <- @categories do %>
-            <button
-              phx-click="select_category"
-              phx-value-category={category}
-              class={"px-4 py-2 rounded-full text-sm font-medium #{if @active_category == category, do: "bg-yellow-400 text-black", else: "bg-zinc-800 text-white"}"}
-            >
-              {category}
-            </button>
-          <% end %>
-        </div>
-      </div>
-      
-    <!-- 추천 게임 -->
-      <%= if @featured_game do %>
-        <div class="max-w-4xl mx-auto bg-zinc-900 rounded-lg overflow-hidden mb-12">
-          <div class="p-8 flex flex-col md:flex-row">
-            <div class="flex-shrink-0 flex justify-center items-center p-6 md:p-0 md:mr-8">
-              <div class="text-6xl">
-                {@featured_game.image}
-              </div>
-            </div>
-            <div class="flex-grow">
-              <div class="mb-4">
-                <span class="bg-yellow-600 text-xs text-black px-2 py-1 rounded font-semibold">
-                  {@featured_game.category}
-                </span>
-              </div>
-              <h2 class="text-xl font-bold mb-2">{@featured_game.name}</h2>
-              <p class="text-gray-400 text-sm mb-6">{@featured_game.description}</p>
-
-              <div class="grid grid-cols-3 gap-4 mb-6">
-                <div>
-                  <p class="font-bold text-xl">{number_to_string(@featured_game.players)}명</p>
-                  <p class="text-gray-500 text-xs">플레이어</p>
-                </div>
-                <div>
-                  <p class="font-bold text-xl">{number_to_string(@featured_game.xrp)} XRP</p>
-                  <p class="text-gray-500 text-xs">누적 상금</p>
-                </div>
-                <div>
-                  <p class="font-bold text-xl">{days_remaining(@featured_game.end_time)}일</p>
-                  <p class="text-gray-500 text-xs">남은 기간</p>
-                </div>
-              </div>
-
-              <button class="bg-yellow-400 text-black font-bold py-2 px-6 rounded">
-                <.link navigate={~p"/games/#{@featured_game.id}"} class="block w-full py-2">
-                  상세 보기
-                </.link>
-              </button>
-            </div>
-          </div>
-        </div>
-      <% end %>
-      
-    <!-- 게임 목록 -->
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="flex items-center mb-6">
-          <div class="text-2xl mr-4">🎮</div>
-          <h2 class="text-xl font-bold">
-            {if @active_category == "전체 게임", do: "참여 가능한 게임", else: @active_category}
-          </h2>
+    <!-- 콘텐츠 래퍼 -->
+      <div class="content-wrapper">
+        <!-- 메인 타이틀 -->
+        <div class="text-center py-10">
+          <h1 class="text-3xl font-bold mb-2">수익률 기반 지능형 게임 시스템</h1>
+          <p class="text-gray-400 text-sm">도파민과 함께 게임을 즐기며 수익 창출의 기회를 잡아보세요</p>
         </div>
         
-    <!-- 게임 그리드 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <%= for game <- @games do %>
-            <div class="bg-zinc-900 rounded-lg overflow-hidden">
-              <div class="p-6 flex justify-center">
-                <div class="text-5xl">
-                  {game.image}
+    <!-- 카테고리 선택 메뉴 -->
+        <div class="max-w-6xl mx-auto px-4 mb-8">
+          <div class="flex flex-wrap gap-2">
+            <%= for category <- @categories do %>
+              <button
+                phx-click="select_category"
+                phx-value-category={category}
+                class={"px-4 py-2 rounded-full text-sm font-medium #{if @active_category == category, do: "bg-yellow-400 text-black", else: "bg-zinc-800 text-white hover:bg-zinc-700"}"}
+              >
+                {category}
+              </button>
+            <% end %>
+          </div>
+        </div>
+        
+    <!-- 추천 게임 -->
+        <%= if @featured_game do %>
+          <div class="max-w-4xl mx-auto bg-zinc-900 rounded-lg overflow-hidden mb-12 game-card">
+            <div class="p-8 flex flex-col md:flex-row">
+              <div class="flex-shrink-0 flex justify-center items-center p-6 md:p-0 md:mr-8">
+                <div class="text-6xl">
+                  {@featured_game.image}
                 </div>
               </div>
-              <div class="p-6">
+              <div class="flex-grow">
                 <div class="mb-4">
                   <span class="bg-yellow-600 text-xs text-black px-2 py-1 rounded font-semibold">
-                    {game.category}
+                    {@featured_game.category}
                   </span>
                 </div>
-                <h3 class="font-bold mb-2">{game.name}</h3>
-                <p class="text-gray-400 text-xs mb-4 h-16 overflow-hidden">{game.description}</p>
+                <h2 class="text-xl font-bold mb-2">{@featured_game.name}</h2>
+                <p class="text-gray-400 text-sm mb-6">{@featured_game.description}</p>
 
-                <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="grid grid-cols-3 gap-4 mb-6">
                   <div>
-                    <p class="font-bold">{number_to_string(game.players)}명</p>
+                    <p class="font-bold text-xl">{number_to_string(@featured_game.players)}명</p>
                     <p class="text-gray-500 text-xs">플레이어</p>
                   </div>
                   <div>
-                    <p class="font-bold">{number_to_string(game.xrp)} XRP</p>
+                    <p class="font-bold text-xl">{number_to_string(@featured_game.xrp)} XRP</p>
                     <p class="text-gray-500 text-xs">누적 상금</p>
                   </div>
                   <div>
-                    <p class="font-bold">{days_remaining(game.end_time)}일</p>
+                    <p class="font-bold text-xl">{days_remaining(@featured_game.end_time)}일</p>
                     <p class="text-gray-500 text-xs">남은 기간</p>
                   </div>
                 </div>
 
-                <button class="w-full bg-yellow-400 text-black font-bold py-2 rounded">
-                  <.link navigate={~p"/games/#{game.id}"} class="block w-full py-2">
+                <button class="bg-yellow-400 text-black font-bold py-2 px-6 rounded hover:bg-yellow-500 transition duration-200">
+                  <.link navigate={~p"/games/#{@featured_game.id}"} class="block w-full py-2">
                     상세 보기
                   </.link>
                 </button>
               </div>
             </div>
-          <% end %>
+          </div>
+        <% end %>
+        
+    <!-- 게임 목록 -->
+        <div class="max-w-6xl mx-auto px-4">
+          <div class="flex items-center mb-6">
+            <div class="text-2xl mr-4">🎮</div>
+            <h2 class="text-xl font-bold">
+              {if @active_category == "전체 게임", do: "참여 가능한 게임", else: @active_category}
+            </h2>
+          </div>
+          
+    <!-- 게임 그리드 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <%= for game <- @games do %>
+              <div class="bg-zinc-900 rounded-lg overflow-hidden game-card">
+                <div class="p-6 flex justify-center">
+                  <div class="text-5xl">
+                    {game.image}
+                  </div>
+                </div>
+                <div class="p-6">
+                  <div class="mb-4">
+                    <span class="bg-yellow-600 text-xs text-black px-2 py-1 rounded font-semibold">
+                      {game.category}
+                    </span>
+                  </div>
+                  <h3 class="font-bold mb-2">{game.name}</h3>
+                  <p class="text-gray-400 text-xs mb-4 h-16 overflow-hidden">{game.description}</p>
+
+                  <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div>
+                      <p class="font-bold">{number_to_string(game.players)}명</p>
+                      <p class="text-gray-500 text-xs">플레이어</p>
+                    </div>
+                    <div>
+                      <p class="font-bold">{number_to_string(game.xrp)} XRP</p>
+                      <p class="text-gray-500 text-xs">누적 상금</p>
+                    </div>
+                    <div>
+                      <p class="font-bold">{days_remaining(game.end_time)}일</p>
+                      <p class="text-gray-500 text-xs">남은 기간</p>
+                    </div>
+                  </div>
+
+                  <button class="w-full bg-yellow-400 text-black font-bold py-2 rounded hover:bg-yellow-500 transition duration-200">
+                    <.link navigate={~p"/games/#{game.id}"} class="block w-full py-2">
+                      상세 보기
+                    </.link>
+                  </button>
+                </div>
+              </div>
+            <% end %>
+          </div>
         </div>
+        
+    <!-- 푸터 표시를 위한 여백 -->
+        <div class="h-20"></div>
       </div>
     </div>
+
+    <!-- 우주 테마 푸터 스타일을 적용하는 JavaScript -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // 푸터 요소에 space-footer 클래스 추가
+        const footer = document.querySelector('footer');
+        if (footer) {
+          footer.classList.add('space-footer');
+        }
+      });
+    </script>
     """
   end
 

@@ -3,3 +3,344 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+/* 스크롤 성능 최적화 */
+html, body {
+  overflow-x: hidden;
+  /* 스크롤 렌더링 최적화 */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* 성능 최적화된 우주 배경 애니메이션 효과 */
+.animated-bg {
+  position: fixed; /* fixed 위치 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* 전체 높이 */
+  height: 100vh;
+  z-index: -1; /* 낮은 z-index로 콘텐츠 뒤에 배치 */
+  overflow: hidden;
+  isolation: isolate;
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* 우주 배경 그라데이션 효과 */
+.animated-bg::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(79, 70, 229, 0.3) 0%, rgba(0, 0, 0, 0) 40%),
+    radial-gradient(circle at 75% 75%, rgba(124, 58, 237, 0.2) 0%, rgba(0, 0, 0, 0) 40%),
+    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: -3;
+  opacity: 0.8;
+  /* 애니메이션 최적화 - 더 느리게 회전 */
+  animation: rotate-slow 180s linear infinite;
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 별빛 효과 (우주 스타일) */
+.stars {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+}
+
+/* 별 기본 스타일 */
+.stars span {
+  position: absolute;
+  border-radius: 50%;
+  /* 애니메이션 최적화 - 더 느리게 깜빡임 */
+  animation: twinkle-space 8s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+/* 큰 별들 - 청색 계열 (푸른 별) */
+.stars span:nth-child(5n+1) {
+  width: 3px;
+  height: 3px;
+  background-color: rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 8px 2px rgba(56, 189, 248, 0.7);
+}
+
+/* 중간 별들 - 보라색 계열 */
+.stars span:nth-child(5n+2) {
+  width: 2px;
+  height: 2px;
+  background-color: rgba(168, 85, 247, 0.9);
+  box-shadow: 0 0 6px 1px rgba(168, 85, 247, 0.7);
+}
+
+/* 작은 별들 - 하얀색 */
+.stars span:nth-child(5n+3) {
+  width: 1px;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* 중간 별들 - 하얀색 (밝은) */
+.stars span:nth-child(5n+4) {
+  width: 2px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.7);
+}
+
+/* 큰 별들 - 청록색 계열 */
+.stars span:nth-child(5n+5) {
+  width: 3px;
+  height: 3px;
+  background-color: rgba(6, 182, 212, 0.9);
+  box-shadow: 0 0 8px 2px rgba(6, 182, 212, 0.7);
+}
+
+/* 별 위치 - 더 많은 별들 분포 */
+.stars span:nth-child(1) { top: 5%; left: 10%; animation-delay: 0.1s; }
+.stars span:nth-child(2) { top: 15%; left: 25%; animation-delay: 0.5s; }
+.stars span:nth-child(3) { top: 25%; left: 15%; animation-delay: 1.2s; }
+.stars span:nth-child(4) { top: 10%; left: 35%; animation-delay: 1.7s; }
+.stars span:nth-child(5) { top: 20%; left: 45%; animation-delay: 2.1s; }
+.stars span:nth-child(6) { top: 5%; left: 55%; animation-delay: 0.5s; }
+.stars span:nth-child(7) { top: 25%; left: 65%; animation-delay: 1.1s; }
+.stars span:nth-child(8) { top: 15%; left: 75%; animation-delay: 2.3s; }
+.stars span:nth-child(9) { top: 20%; left: 85%; animation-delay: 1.2s; }
+.stars span:nth-child(10) { top: 5%; left: 95%; animation-delay: 0.9s; }
+.stars span:nth-child(11) { top: 40%; left: 5%; animation-delay: 2.1s; }
+.stars span:nth-child(12) { top: 50%; left: 25%; animation-delay: 1.5s; }
+.stars span:nth-child(13) { top: 60%; left: 35%; animation-delay: 0.3s; }
+.stars span:nth-child(14) { top: 45%; left: 55%; animation-delay: 1.8s; }
+.stars span:nth-child(15) { top: 55%; left: 65%; animation-delay: 2.3s; }
+.stars span:nth-child(16) { top: 65%; left: 75%; animation-delay: 1.6s; }
+.stars span:nth-child(17) { top: 75%; left: 85%; animation-delay: 0.7s; }
+.stars span:nth-child(18) { top: 80%; left: 95%; animation-delay: 1.9s; }
+.stars span:nth-child(19) { top: 90%; left: 15%; animation-delay: 2.5s; }
+.stars span:nth-child(20) { top: 95%; left: 45%; animation-delay: 1.1s; }
+
+/* 슈팅스타 (유성 효과) - 우주 스타일 */
+.shooting-star {
+  position: absolute;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(56, 189, 248, 0.6) 40%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+  transform: rotate(-45deg);
+  animation: shoot 15s ease-out infinite;
+  opacity: 0;
+  /* GPU 가속 활성화 */
+  will-change: transform, opacity;
+}
+
+.shooting-star:nth-child(1) {
+  width: 150px;
+  height: 2px;
+  top: 20%;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.shooting-star:nth-child(2) {
+  width: 180px;
+  height: 2px;
+  top: 60%;
+  left: -180px;
+  animation-delay: 7.5s;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(168, 85, 247, 0.6) 40%, transparent 70%);
+}
+
+/* 행성/별빛 효과 (우주 스타일) */
+.space-planet {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1px);
+  opacity: 0.2;
+  z-index: -2;
+}
+
+.planet-1 {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.6) 0%, rgba(6, 182, 212, 0) 70%);
+  top: 15%;
+  right: 10%;
+  animation: pulse-slow 15s ease-in-out infinite;
+}
+
+.planet-2 {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%);
+  bottom: 15%;
+  left: 10%;
+  animation: pulse-slow 20s ease-in-out infinite;
+}
+
+.space-nebula {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0) 70%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(20px);
+  animation: nebula-pulse 30s ease-in-out infinite;
+  z-index: -3;
+}
+
+/* 둥둥 떠다니는 효과 (최적화) */
+.floating-light {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  filter: blur(15px);
+  opacity: 0.3;
+  animation: float-vertical 25s ease-in-out infinite alternate;
+  /* GPU 가속 활성화 */
+  will-change: transform;
+  z-index: -2;
+}
+
+.floating-light:nth-child(1) {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0) 70%);
+  top: 30%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.floating-light:nth-child(2) {
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0) 70%);
+  top: 60%;
+  left: 70%;
+  animation-delay: 5s;
+}
+
+/* 콘텐츠 래퍼 */
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 240px); /* 푸터 및 헤더 높이 고려 */
+  padding-top: 64px; /* pt-16 대신 직접 패딩 적용 */
+  padding-bottom: 40px; /* pb-10 대신 직접 패딩 적용 */
+  margin-bottom: 100px; /* 푸터 공간 확보 */
+  transform: translateZ(0); /* GPU 가속 */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* 게임 카드 최적화 */
+.game-card {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: transform 0.2s ease-in-out;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+}
+
+/* 푸터 스타일 - 우주 테마 그라데이션 적용 */
+.space-footer {
+  position: relative;
+  z-index: 2; /* 애니메이션 배경보다 높은 z-index */
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7) 10%, rgba(0, 0, 0, 0.9) 70%);
+  border-top: 1px solid rgba(79, 70, 229, 0.1);
+  margin-top: -50px; /* 배경과 겹치도록 설정 */
+  padding-top: 60px !important; /* 그라데이션 영역을 더 넓게 */
+}
+
+.space-footer p {
+  color: rgba(148, 163, 184, 0.8); /* 더 밝은 회색 */
+}
+
+.space-footer a {
+  color: rgba(148, 163, 184, 0.8); /* 더 밝은 회색 */
+  transition: color 0.3s ease;
+}
+
+.space-footer a:hover {
+  color: rgba(56, 189, 248, 0.9); /* 푸른색 계열로 호버 효과 */
+  text-decoration: none;
+}
+
+/* 애니메이션 정의 - 우주 스타일 */
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 우주 별 깜빡임 */
+@keyframes twinkle-space {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* 슈팅스타 효과 - 최적화 */
+@keyframes shoot {
+  0% { transform: translateX(0) rotate(-45deg); opacity: 0; }
+  2% { opacity: 1; }
+  15% { opacity: 0.6; }
+  30% { opacity: 0; }
+  100% { transform: translateX(calc(100vw + 300px)) rotate(-45deg); opacity: 0; }
+}
+
+/* 상하 움직임 - 최적화 */
+@keyframes float-vertical {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-30px); }
+}
+
+/* 행성 맥동 효과 */
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+}
+
+/* 성운 맥동 효과 */
+@keyframes nebula-pulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
+}
+
+/* 스크롤바 스타일 최적화 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .shooting-star {
+    animation-duration: 20s; /* 모바일에서 더 느리게 */
+  }
+  
+  .stars span {
+    animation-duration: 10s; /* 모바일에서 더 느리게 */
+  }
+  
+  .floating-light {
+    opacity: 0.2; /* 모바일에서 더 투명하게 */
+  }
+}
