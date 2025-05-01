@@ -7,9 +7,29 @@
 /* 스크롤 성능 최적화 */
 html, body {
   overflow-x: hidden;
-  /* 스크롤 렌더링 최적화 */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+}
+
+/* 플래시 메시지 애니메이션 */
+@keyframes progressShrink {
+  0% {
+    width: 100%;
+    opacity: 0.9;
+  }
+  20% {
+    width: 90%;
+    opacity: 1;
+  }
+  100% {
+    width: 0%;
+    opacity: 0.8;
+  }
+}
+
+/* 프로그레스 바 애니메이션 클래스 */
+.flash-progress-animate {
+  animation: progressShrink 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 /* 성능 최적화된 우주 배경 애니메이션 효과 */

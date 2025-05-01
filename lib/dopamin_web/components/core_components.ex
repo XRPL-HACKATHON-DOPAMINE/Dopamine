@@ -112,24 +112,59 @@ defmodule DopaminWeb.CoreComponents do
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
+      phx-hook="AutoHideFlash"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class={[
-        "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
-      ]}
+      class="fixed top-6 right-6 w-80 sm:w-96 z-50 rounded-lg overflow-hidden shadow-xl border border-gray-800"
       {@rest}
     >
-      <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
-        {@title}
-      </p>
-      <p class="mt-2 text-sm leading-5">{msg}</p>
-      <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
-        <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
-      </button>
+      <div class={[
+        "flex items-start p-4 w-full",
+        @kind == :info && "bg-emerald-900/80 text-emerald-100",
+        @kind == :error && "bg-rose-900/80 text-rose-100"
+      ]}>
+        <div class="flex-shrink-0 mr-3">
+          <div class={[
+            "flex items-center justify-center w-10 h-10 rounded-full",
+            @kind == :info && "bg-emerald-100/20 text-emerald-200",
+            @kind == :error && "bg-rose-100/20 text-rose-200"
+          ]}>
+            <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-6 w-6" />
+            <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-6 w-6" />
+          </div>
+        </div>
+        <div class="flex-1 mr-2">
+          <h3 :if={@title} class="text-base font-medium leading-5">
+            {@title}
+          </h3>
+          <p class={[
+            "text-sm",
+            @title && "mt-1"
+          ]}>
+            {msg}
+          </p>
+        </div>
+        <button
+          type="button"
+          class={[
+            "w-8 h-8 flex items-center justify-center rounded-full",
+            @kind == :info && "text-emerald-200",
+            @kind == :error && "text-rose-200"
+          ]}
+          aria-label={gettext("close")}
+        >
+          <.icon name="hero-x-mark-solid" class="h-5 w-5" />
+        </button>
+      </div>
+      <div
+        class={[
+          "flash-progress h-1.5",
+          @kind == :info && "bg-emerald-400",
+          @kind == :error && "bg-rose-400"
+        ]}
+        style="width: 100%"
+      >
+      </div>
     </div>
     """
   end
