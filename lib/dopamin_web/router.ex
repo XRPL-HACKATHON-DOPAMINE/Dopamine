@@ -72,6 +72,14 @@ defmodule DopaminWeb.Router do
       live "/main", MainScreen.MainLive
       live "/games/:id", GameIndexLive
       live "/betting/:participant_id", BettingLive, :show
+
+      # 게시판 관련 경로
+      live "/boards", BoardLive.Index, :index
+      live "/boards/admin", BoardLive.AdminIndex, :index
+      live "/boards/:slug", BoardLive.Show, :show
+      live "/boards/:slug/new", BoardLive.PostForm, :new
+      live "/boards/:slug/posts/:id", BoardLive.PostShow, :show
+      live "/boards/:slug/posts/:id/edit", BoardLive.PostForm, :edit
     end
   end
 

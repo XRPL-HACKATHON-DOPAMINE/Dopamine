@@ -364,3 +364,99 @@ html, body {
     opacity: 0.2; /* 모바일에서 더 투명하게 */
   }
 }
+
+/* 게시판 관련 스타일 */
+.board-list {
+  transition: transform 0.2s ease-in-out;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.board-list:hover {
+  transform: translateY(-2px);
+}
+
+/* 게시글 내용 스타일 */
+.post-content {
+  line-height: 1.8;
+  word-break: break-word;
+}
+
+.post-content h1, .post-content h2, .post-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.post-content p {
+  margin-bottom: 1em;
+}
+
+.post-content ul, .post-content ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.post-content li {
+  margin-bottom: 0.5em;
+}
+
+.post-content blockquote {
+  border-left: 4px solid rgba(56, 189, 248, 0.5);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* 댓글 섹션 스타일 */
+.comment-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.comment-card:hover {
+  background-color: rgba(63, 63, 70, 0.5);
+}
+
+/* 폼 요소 스타일 */
+.form-input {
+  background-color: rgba(39, 39, 42, 0.8);
+  border: 1px solid rgba(63, 63, 70, 0.6);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+/* 게시판 테이블 호버 효과 */
+.board-table tr:hover {
+  background-color: rgba(63, 63, 70, 0.3);
+  transition: background-color 0.2s ease;
+}
+
+/* 게시판 링크 호버 애니메이션 */
+.board-link {
+  position: relative;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.board-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: rgba(250, 204, 21, 0.8);
+  transition: width 0.3s ease;
+}
+
+.board-link:hover::after {
+  width: 100%;
+}

@@ -384,3 +384,79 @@ add_participants.(game6.id)
 add_participants.(game7.id)
 
 IO.puts("✅ 게임 데이터 시드가 성공적으로 완료되었습니다!")
+
+# 게시판 데이터 추가
+alias Dopamin.Board.Board
+alias Dopamin.Accounts
+
+IO.puts("게시판 데이터 생성 중...")
+
+# 게시판 초기 데이터 생성
+boards = [
+  %{
+    name: "공지사항",
+    description: "도파민 서비스의 중요 공지사항과 업데이트 소식을 확인하세요.",
+    slug: "announcements",
+    is_public: true
+  },
+  %{
+    name: "게임 토론",
+    description: "다양한 도파민 게임에 대한 전략과 의견을 공유하는 공간입니다.",
+    slug: "game-discussions",
+    is_public: true
+  },
+  %{
+    name: "투자 전략",
+    description: "암호화폐와 게임 투자에 관한 전략과 팁을 공유하는 공간입니다.",
+    slug: "investment-strategies",
+    is_public: true
+  },
+  %{
+    name: "자유게시판",
+    description: "자유롭게 의견을 나누는 공간입니다.",
+    slug: "free-board",
+    is_public: true
+  },
+  %{
+    name: "건의사항",
+    description: "도파민 서비스 개선을 위한 아이디어와 건의사항을 제안해주세요.",
+    slug: "suggestions",
+    is_public: true
+  }
+]
+
+# 게시판 데이터 추가
+Enum.each(boards, fn board_data ->
+  # 기존 데이터가 있으면 무시, 없으면 생성
+  case Repo.get_by(Board, slug: board_data.slug) do
+    nil ->
+      %Board{}
+      |> Board.changeset(board_data)
+      |> Repo.insert!()
+
+    _existing ->
+      IO.puts("이미 존재하는 게시판: #{board_data.name}")
+  end
+end)
+
+# 테스트 계정 추가 (이미 있는지 확인)
+test_user_email = "test@example.com"
+
+unless Repo.get_by(Dopamin.Accounts.User, email: test_user_email) do
+  {:ok, user} =
+    Accounts.register_user(%{
+      email: test_user_email,
+      password: "testpassword12"
+    })
+
+  # 계정 수동으로 확인 처리
+  now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+  user
+  |> Ecto.Changeset.change(confirmed_at: now)
+  |> Repo.update!()
+
+  IO.puts("테스트 계정 생성: #{test_user_email}")
+end
+
+IO.puts("✅ 모든 시드 데이터가 성공적으로 완료되었습니다!")

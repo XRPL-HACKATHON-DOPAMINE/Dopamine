@@ -79,6 +79,16 @@ defmodule DopaminWeb.MainScreen.MainLive do
         <div class="text-center py-10">
           <h1 class="text-3xl font-bold mb-2">수익률 기반 지능형 게임 시스템</h1>
           <p class="text-gray-400 text-sm">도파민과 함께 게임을 즐기며 수익 창출의 기회를 잡아보세요</p>
+          
+    <!-- 게시판 바로가기 버튼 추가 -->
+          <div class="mt-6">
+            <.link
+              navigate={~p"/boards"}
+              class="inline-flex items-center px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 rounded-lg transition-colors"
+            >
+              <span class="mr-2">📋</span> 커뮤니티 게시판 보기
+            </.link>
+          </div>
         </div>
         
     <!-- 카테고리 선택 메뉴 -->
