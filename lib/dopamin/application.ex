@@ -8,6 +8,11 @@ defmodule Dopamin.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {Nx.Serving,
+       serving: BookSearch.Model.serving(defn_options: [compiler: EXLA]),
+       batch_size: 16,
+       batch_timeout: 100,
+       name: BookSearchModel},
       DopaminWeb.Telemetry,
       Dopamin.Repo,
       {DNSCluster, query: Application.get_env(:dopamin, :dns_cluster_query) || :ignore},
