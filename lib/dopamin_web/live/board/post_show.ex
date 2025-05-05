@@ -274,6 +274,18 @@ defmodule DopaminWeb.BoardLive.PostShow do
      |> put_flash(:info, "댓글이 삭제되었습니다.")}
   end
 
+  def handle_event("analyze_emotion", %{"content" => content}, socket) do
+    # EmotionPredict.Model을 통한 감정 분석
+    result = EmotionPredict.Model.predict(content)
+
+    # 최고 점수의 감정 레이블 확인
+    prediction =
+      result.predictions
+      |> Enum.max_by(fn pred -> pred.score end)
+
+    {:noreply, push_event(socket, "emotion_result", prediction)}
+  end
+
   def render(assigns) do
     ~H"""
     <div class="relative min-h-screen pb-24" phx-hook="ConfirmModal" id="post-show-container">
@@ -414,13 +426,19 @@ defmodule DopaminWeb.BoardLive.PostShow do
                     id="comment-form"
                     phx-hook="FormReset"
                   >
-                    <div class="mb-4">
+                    <div
+                      class="mb-4"
+                      id="emotion-analyzer"
+                      phx-hook="EmotionAnalyzer"
+                      phx-update="ignore"
+                    >
                       <.input
                         field={@comment_form[:content]}
                         type="textarea"
                         rows="4"
                         placeholder="댓글을 입력하세요"
                         required={true}
+                        phx-debounce="300"
                       />
                     </div>
 
@@ -476,13 +494,19 @@ defmodule DopaminWeb.BoardLive.PostShow do
             phx-hook="FormReset"
             id={"edit-comment-form-#{@comment.id}"}
           >
-            <div class="mb-4">
+            <div
+              class="mb-4"
+              id={"emotion-analyzer-edit-#{@comment.id}"}
+              phx-hook="EmotionAnalyzer"
+              phx-update="ignore"
+            >
               <.input
                 field={@edit_form[:content]}
                 type="textarea"
                 rows="4"
                 required={true}
                 value={@comment.content}
+                phx-debounce="300"
               />
             </div>
             <div class="flex justify-end space-x-2">
@@ -571,13 +595,19 @@ defmodule DopaminWeb.BoardLive.PostShow do
                     phx-hook="FormReset"
                     id={"edit-reply-form-#{reply.id}"}
                   >
-                    <div class="mb-4">
+                    <div
+                      class="mb-4"
+                      id={"emotion-analyzer-reply-#{reply.id}"}
+                      phx-hook="EmotionAnalyzer"
+                      phx-update="ignore"
+                    >
                       <.input
                         field={edit_reply_form[:content]}
                         type="textarea"
                         rows="3"
                         required={true}
                         value={reply.content}
+                        phx-debounce="300"
                       />
                     </div>
                     <div class="flex justify-end space-x-2">

@@ -3,6 +3,7 @@ import Metamask from "./metamask";
 import AutoHideFlash from "./auto_hide_flash";
 import FormReset from "./form_reset";
 import ConfirmModal from "./confirm_modal";
+import EmotionAnalyzer from "./emotion_analyzer";
 
 export default {
   CountdownTimer,
@@ -10,4 +11,5 @@ export default {
   AutoHideFlash,
   FormReset,
   ConfirmModal,
+  EmotionAnalyzer,
 };

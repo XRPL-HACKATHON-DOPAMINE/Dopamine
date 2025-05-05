@@ -60,7 +60,11 @@ defmodule Dopamin.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:live_debugger, "~> 0.1.2", only: :dev},
-      {:tidewave, "~> 0.1", only: :dev}
+      {:tidewave, "~> 0.1", only: :dev},
+      {:bumblebee, "~> 0.6.0"},
+      {:nx, "~> 0.9.2"},
+      {:exla, "~> 0.9.2"},
+      {:explorer, "~> 0.10.1"}
     ]
   end
 
